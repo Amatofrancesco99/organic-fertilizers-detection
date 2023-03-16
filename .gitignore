@@ -127,3 +127,16 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# .DS_Store
+.DS_Store
+
+# Spanish dataset
+/Datasets/manure-pasture-fields/*
+
+# All papers and notes .pdf
+Notes/Papers/*
+Notes/notes.pdf
+
+# All audio-call recs
+Recordings/*
