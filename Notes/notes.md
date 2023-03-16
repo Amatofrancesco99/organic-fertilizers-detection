@@ -1,9 +1,11 @@
+<!-- 
 <style>
-red { color: Red }
-orange { color: Orange }
-purple {color: Purple }
-green { color: Green }
+    red { color: Red }
+    orange { color: Orange }
+    purple {color: Purple }
+    green { color: Green }
 </style>
+-->
 
 # <b>Tesi magistrale - Satellite Data Analysis 🌎</b>
 
@@ -121,7 +123,7 @@ Un'idea potrebbe essere quella di trainare i nostri modelli (di ML - non optiamo
 
 **Cosa iniziare a fare?** Dare un occhiata al [dataset Spagnolo](https://data.mendeley.com/datasets/fbvvvf55kp/1), studiare come è fatto.
 
-**ChatGPT prompt:**
+**Idea - da raffinare:**
 "Codice Google Earth Engine & Python che sia in grado di riconoscere in un lasso temporale le date di concimazione e la percentuale di area concimata di un campo - utilizzando immagini satellitari, più specificatamente usando sia Sentinel2 per indici ottici, mentre Sentinel1 per indici radar (usando un filtro per il cloud coverage per le immagini Sentinel2).<br>
 Il dataset nel complesso contiene 30 campi agricoli di cui per ognuno abbiamo una sola data di concimazione e la geometria del campo. 
 Il train dataset contiene il 70% di campi agricoli totali di cui sappiamo una sola data di concimazione, le coordinate geografiche del campo, l'area del campo.<br>
