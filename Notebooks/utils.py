@@ -119,12 +119,12 @@ def calculate_savi(image, date, polygon, type=""):
         L = 0.428
         savi = (nir.subtract(red)).divide(nir.add(red).add(L)).multiply(1 + L).rename('SAVI')
     elif type == 'M':
-        savi = (nir.add(1.0).multiply(2).subtract(nir.add(1.0).multiply(2)).pow(2).subtract((nir.subtract(red)).multiply(8)).sqrt()).multiply(0.5).rename('MSAVI')
+        savi = nir.multiply(2.0).add(1.0).subtract(nir.multiply(2.0).add(1.0).pow(2).subtract(nir.subtract(red).multiply(8.0)).sqrt()).divide(2.0).rename('MSAVI')
     elif type == 'O':
-        savi = ((nir.subtract(red).multiply(1.0 + 0.16)).divide(nir.add(red).add(0.16))).rename('OSAVI')
+        savi = nir.subtract(red).multiply(1.0 + 0.16).divide(nir.add(red).add(0.16)).rename('OSAVI')
     elif type == 'T':
         X, A, B = 0.114, 0.824, 0.421
-        savi = ((nir.subtract(B * red).subtract(A)).multiply(B)).divide(red.add((nir.subtract(A)).multiply(B)).add((B.pow(2.0).add(1)).multiply(X))).rename('TSAVI')
+        savi = nir.subtract(B.multiply(red).subtract(A)).multiply(B).divide(red.add(B.multiply(nir.subtract(A))).add(X.multiply(1.0 + B.pow(2.0)))).rename('TSAVI')
 
     # Mask out clouds and shadows
     savi = savi.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
