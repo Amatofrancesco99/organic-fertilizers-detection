@@ -199,6 +199,8 @@ def get_band(image, date, polygon, id):
 
 
 
+
+
 """ RADAR INDICES """
 
 def calculate_bsi(image, date, polygon, type=""):
@@ -284,3 +286,73 @@ def calculate_tirs(image, polygon, date):
 
     # Calculate the mean TIRS for the field polygon
     return tirs.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['TIRS']
+
+
+
+
+
+""" GATHER ALL MEAN INDICES FOR A FIELD, FOR EACH TIME SATELLITES CROSSED THE FIELD IN A SPECIFIC TIME SPAN """
+
+def process_field(field, start_date, end_date):
+    """
+    Processes a single field by calculating the mean vegetation indices for each time the satellite passed over that field.
+
+    Args:
+        field (dict): The field dictionary containing the crop field name, manure dates, and polygon coordinates.
+        start_date (str): The start date of the date range to filter the collection by.
+        end_date (str): The end date of the date range to filter the collection by.
+
+    Returns:
+        list: A list of dictionary objects containing the mean calculated vegetation indices for each acquisition date, for the
+        specified field.
+    """
+    # Get the field name, manure dates, and polygon coordinates
+    field_name = field['crop_field_name']
+    manure_dates = field['manure_dates']
+    polygon = ee.Geometry.Polygon(field['polygon_coordinates'])
+    
+    # Filter Sentinel 2 collection
+    s2_collection = ee.ImageCollection('COPERNICUS/S2_SR')
+    s2_filtered = s2_collection.filterBounds(polygon).filterDate(str(start_date), str(end_date)) \
+                                  .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 30))
+
+    ''' Filter Sentinel 1 collection for dates that match the Sentinel 2 collection
+    There is an issue since Sentinel 1 and Sentinel 2 can pass over the same geographical
+    area on completely different days, as they have different orbits...
+
+    s1_collection = ee.ImageCollection('COPERNICUS/S1_GRD_FLOAT')
+    s1_filtered = s1_collection.filterBounds(polygon).filterDate(start_date_widget.value, end_date_widget.value) \
+                                  .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV')) \
+                                  .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VH')) \
+                                  .filter(ee.Filter.eq('instrumentMode', 'IW')) \
+                                  .filterMetadata('resolution_meters', 'equals', 10) \
+                                  .filter(ee.Filter.equals(leftField='system:time_start', rightField='system:time_start', **{'join': ee.Filter.equals()}))
+    '''
+
+    # Get distinct dates from the Sentinel 2 collection and put into the date_range list
+    s2_dates = s2_filtered.aggregate_array('system:time_start').map(lambda time_start: ee.Date(time_start).format('YYYY-MM-dd'))
+    s2_dates_distinct = s2_dates.distinct().sort()
+    date_range = pd.to_datetime(s2_dates_distinct.getInfo())
+    
+    # Create a list to store rows for the field
+    acquisitions = []
+    for date in date_range:
+        # Calculate indices for the date
+        ndvi = calculate_ndvi(s2_filtered, date, polygon)
+        eomi1 = calculate_eomi(s2_filtered, date, polygon, 1)
+        eomi2 = calculate_eomi(s2_filtered, date, polygon, 2)
+        eomi3 = calculate_eomi(s2_filtered, date, polygon, 3)
+        eomi4 = calculate_eomi(s2_filtered, date, polygon, 4)
+        nbr2 = calculate_nbr2(s2_filtered, date, polygon)
+        savi = calculate_savi(s2_filtered, date, polygon)
+        msavi = calculate_savi(s2_filtered, date, polygon, 'M')
+
+        # Create a dataframe row for the date
+        df_acquisition= {'crop_field_name': field_name, 'acquisition_date': date, 'NDVI': ndvi,
+                 'EOMI1': eomi1, 'EOMI2': eomi2, 'EOMI3': eomi3, 'EOMI4': eomi4, 'NBR2': nbr2,
+                 'SAVI': savi, 'MSAVI': msavi, 'manure_dates': manure_dates}
+        
+        # Add row to the list
+        acquisitions.append(df_acquisition)
+    
+    return acquisitions
