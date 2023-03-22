@@ -140,3 +140,6 @@ Notes/notes.pdf
 
 # All audio-call recs
 Recordings/*
+
+# setup.py files inside Notebooks/utils folder
+Notebooks/utils/setup.py

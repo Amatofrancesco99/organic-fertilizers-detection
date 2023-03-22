@@ -133,3 +133,4 @@ Infine, il modello non deve imparare pattern nelle date di concimazione o tra le
 
 ***
 ***
+## <green><b>22 Mar 2023 - 3 incontro</b></green>
