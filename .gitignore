@@ -132,7 +132,7 @@ dmypy.json
 .DS_Store
 
 # Spanish dataset
-/Datasets/manure-pasture-fields/*
+Datasets/manure-pasture-fields/*
 
 # All papers and notes .pdf
 Notes/Papers/*
@@ -141,5 +141,6 @@ Notes/notes.pdf
 # All audio-call recs
 Recordings/*
 
-# setup.py files inside Notebooks/utils folder
-Notebooks/utils/setup.py
+# Files for PyPI sentinel-satellite library
+Notebooks/utils/pyproject.toml
+Notebooks/utils/setup.cfg
