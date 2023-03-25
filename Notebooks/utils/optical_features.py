@@ -1,6 +1,35 @@
 import ee, pandas as pd
 
 
+def get_band(image, date, polygon, id):
+    """
+    Calculate the Band x value for a specific date and polygon in a Sentinel-2 image collection
+    
+    Spectral bands refer to specific ranges of electromagnetic radiation (EMR) that are used in remote sensing 
+    applications to capture information about the earth's surface. Spectral bands are usually defined by their
+    wavelength or frequency, and are typically categorized into broad groups based on their spectral characteristics, 
+    such as visible, near-infrared, shortwave infrared, and thermal infrared.
+    Each spectral band provides unique information about the reflectance and absorption properties of features on the
+    earth's surface. For example, visible bands are sensitive to the reflectance of green vegetation, water, and soil,
+    while near-infrared bands are sensitive to the reflectance of healthy vegetation. Shortwave infrared bands can detect
+    differences in moisture content and mineralogy, while thermal infrared bands can detect heat signatures.
+
+    Args:
+        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
+        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
+        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        id (int): The id of the BAND to be returned.
+    
+    Returns:
+        float: the mean Band x value, for the specified date and polygon.
+    """
+    # Filter image collection to get the image for the date
+    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
+    
+    # Returns the mean band x value
+    return image.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['B' + str(id)]
+
+
 def calculate_ndvi(image, date, polygon, type="", id=None):
     """
     Calculates the xNDVI index for a given image, date, and polygon.
@@ -204,30 +233,137 @@ def calculate_nbr(image, date, polygon, id=None):
     return nbr.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['NBR' + str(id) if id != None else '']
 
 
-def get_band(image, date, polygon, id):
+def calculate_chlorophyll_index(image, date, polygon, id):
     """
-    Calculate the Band x value for a specific date and polygon in a Sentinel-2 image collection
-    
-    Spectral bands refer to specific ranges of electromagnetic radiation (EMR) that are used in remote sensing 
-    applications to capture information about the earth's surface. Spectral bands are usually defined by their
-    wavelength or frequency, and are typically categorized into broad groups based on their spectral characteristics, 
-    such as visible, near-infrared, shortwave infrared, and thermal infrared.
-    Each spectral band provides unique information about the reflectance and absorption properties of features on the
-    earth's surface. For example, visible bands are sensitive to the reflectance of green vegetation, water, and soil,
-    while near-infrared bands are sensitive to the reflectance of healthy vegetation. Shortwave infrared bands can detect
-    differences in moisture content and mineralogy, while thermal infrared bands can detect heat signatures.
+    Calculates the Chlorophyll Index (CI) for a given image, date, and polygon.
+
+    The Chlorophyll Index (CI) is a vegetation index used to estimate chlorophyll content in vegetation. It is calculated
+    using the ratio of the near-infrared (NIR) and red (RED) bands of Sentinel-2.
+    In general, CI1 is more commonly used and provides a good estimate of chlorophyll content in a variety of vegetation types. 
+    However, CI2 may be more suitable for some applications, such as in areas with dense vegetation or where structural properties
+    of vegetation are important to consider.
 
     Args:
         image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
         date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
         polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
-        id (int): The id of the BAND to be returned.
-    
+        id (int): The id of the CI index to be calculated (from 1 to 3).
+
     Returns:
-        float: the mean Band x value, for the specified date and polygon.
+        float: the calculated CI value, for the specified date and polygon.
     """
     # Filter image collection to get the image for the date
     image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
+
+    # Calculate CI (different with respect to the passed id)
+    if (id == 1):
+        ci = image.select('B8').divide(image.select('B5')).subtract(1).rename('CI1')
+    elif (id == 2):
+        ci = image.select('B8').divide(image.select('B6')).subtract(1).rename('CI2')
+    elif (id == 3):
+        ci = image.select('B8').divide(image.select('B7')).subtract(1).rename('CI3')
+
+    # Mask out clouds and shadows
+    ci = ci.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
+
+    # Calculate the mean CI for the field polygon
+    return ci.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['CI' + str(id)]
+
+
+def compute_green_coverage_index(image, date, polygon):
+    """
+    Calculate the Green Coverage Index (GCI) for a specific date and polygon in a Sentinel-2 image collection
     
-    # Returns the mean band x value
-    return image.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['B' + str(id)]
+    GCI is a vegetation index that is designed to be less sensitive to atmospheric and soil background effects. It can 
+    be used to estimate the fractional green vegetation cover in a given area.
+    
+    Args:
+        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
+        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
+        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+    
+    Returns:
+        float: the mean value of the GCI, for the specified date and polygon.
+    """
+    # Filter image collection to get the image for the date
+    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
+
+    # Select useful bands
+    b3 = image.select('B3')
+    b9 = image.select('B9')
+
+    # Calculate the GCI
+    gci = b9.divide(b3).subtract(1).rename('GCI')
+
+    # Mask out clouds and shadows
+    gci = gci.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
+
+    # Calculate the mean vegetation index for the field polygon
+    return gci.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['GCI']
+
+
+def compute_soil_composition_index(image, polygon, date):
+    """
+    Computes the Soil Composition Index (SCI) for a specified date and polygon in a Sentinel-2 image collection.
+    
+    The Soil Composition Index (SCI) is a measure of soil composition that is useful for identifying areas with high 
+    mineral content, such as desert environments. It is calculated as (B11 - B08) / (B11 + B08).
+    
+    Args:
+        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
+        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
+    
+    Returns:
+        float: The mean value of the Soil Composition Index (SCI) for the specified date and polygon.
+    """
+    # Filter image collection to get the image for the date
+    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
+
+    # Select useful bands
+    b11 = image.select('B11')
+    b8 = image.select('B8')
+
+    # Calculate the Soil Composition Index (SCI)
+    sci = b11.subtract(b8).divide(b11.add(b8)).rename('SCI')
+
+    # Mask out clouds and shadows
+    sci = sci.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
+
+    # Calculate the mean SCI for the field polygon
+    return sci.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['SCI']
+
+
+def calculate_ndre(image, polygon, date, id):
+    """
+    Calculates the Normalized Difference Red Edge (NDRE) index for a given image, date, and polygon.
+
+    The Normalized Difference Red Edge (NDRE) is a vegetation index used to assess plant chlorophyll and nitrogen
+    content. NDRE is sensitive to the presence of healthy, green vegetation and is useful for monitoring crop health,
+    stress, and growth.
+
+    Args:
+        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
+        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
+        id (int): The id of the NDRE to be calculated (from 1 to 3).
+
+    Returns:
+        float: the calculated NDREx value, for the specified date and polygon.
+    """
+    # Filter image collection to get the image for the date
+    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
+
+    # Calculate NDRE
+    if (id == 1):
+        ndre = image.normalizedDifference(['B08', 'B05']).rename('NDRE1')
+    elif (id == 2):
+        ndre = image.normalizedDifference(['B08', 'B06']).rename('NDRE2')
+    elif (id == 3):
+        ndre = image.normalizedDifference(['B08', 'B07']).rename('NDRE3')
+
+    # Mask out clouds and shadows
+    ndre = ndre.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
+
+    # Calculate the mean NDRE for the field polygon
+    return ndre.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['NDRE' + str(id)]
