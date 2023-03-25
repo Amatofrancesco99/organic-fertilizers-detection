@@ -10,7 +10,7 @@ def s2_process_field(field, start_date, end_date):
     passed over that field.
 
     Args:
-        field (pandas Dataframe - row): The field item containing the field name, manure dates, and polygon coordinates.
+        field (pandas Dataframe - row): The field item containing the field name, and polygon coordinates.
         start_date (str): The start date of the date range to filter the collection by.
         end_date (str): The end date of the date range to filter the collection by.
 
@@ -18,10 +18,9 @@ def s2_process_field(field, start_date, end_date):
         list: A list of dictionary objects containing the mean calculated indices for each acquisition date, for the
         specified field (using the selected sentinel satellite).
     """
-    # Get the field name, manure dates, and polygon coordinates
-    field_name = field['crop_field_name']
-    manure_dates = field.get('manure_dates', None)
-    polygon = ee.Geometry.Polygon(field['polygon_coordinates'])
+    # Get the field name and polygon coordinates
+    field_name = field[0]
+    polygon = ee.Geometry.Polygon(field[1])
     
     # Filter Sentinel 2 collection
     s2_collection = ee.ImageCollection('COPERNICUS/S2_SR')
@@ -47,13 +46,9 @@ def s2_process_field(field, start_date, end_date):
         msavi = optical_features.calculate_savi(s2_filtered, date, polygon, 'M')
 
         # Create a dataframe row for the date
-        df_acquisition= {'crop_field_name': field_name, 's2_acquisition_date': date, 'NDVI': ndvi,
+        df_acquisition= {str(field.index[0]): field_name, 's2_acquisition_date': date, 'NDVI': ndvi,
                     'EOMI1': eomi1, 'EOMI2': eomi2, 'EOMI3': eomi3, 'EOMI4': eomi4, 'NBR2': nbr2,
                     'SAVI': savi, 'MSAVI': msavi}
-        
-        # Add the column 'manure_dates' only if its value is not None
-        if manure_dates is not None:
-            df_acquisition['manure_dates'] = manure_dates
         
         # Add row to the list
         acquisitions.append(df_acquisition)
@@ -67,7 +62,7 @@ def s1_process_field(field, start_date, end_date):
     passed over that field.
 
     Args:
-        field (pandas Dataframe - row): The field item containing the field name, manure dates, and polygon coordinates.
+        field (pandas Dataframe - row): The field item containing the field name and polygon coordinates.
         start_date (str): The start date of the date range to filter the collection by.
         end_date (str): The end date of the date range to filter the collection by.
 
@@ -75,10 +70,9 @@ def s1_process_field(field, start_date, end_date):
         list: A list of dictionary objects containing the mean calculated indices for each acquisition date, for the
         specified field (using the selected sentinel satellite).
     """
-    # Get the field name, manure dates, and polygon coordinates
-    field_name = field['crop_field_name']
-    manure_dates = field.get('manure_dates', None)
-    polygon = ee.Geometry.Polygon(field['polygon_coordinates'])
+    # Get the field name and polygon coordinates
+    field_name = field[0]
+    polygon = ee.Geometry.Polygon(field[1])
     
     # Filter Sentinel 1 collection
     s1_collection = ee.ImageCollection('COPERNICUS/S1_GRD_FLOAT')
@@ -103,12 +97,8 @@ def s1_process_field(field, start_date, end_date):
         tirs = radar_features.calculate_tirs(s1_filtered, date, polygon)
 
         # Create a dataframe row for the date
-        df_acquisition= {'crop_field_name': field_name, 's1_acquisition_date': date,
+        df_acquisition= {str(field.index[0]): field_name, 's1_acquisition_date': date,
                     'BSI': bsi, 'PBSI': pbsi, 'CPBSI': cpbsi, 'TIRS': tirs}
-        
-        # Add the column 'manure_dates' only if its value is not None
-        if manure_dates is not None:
-            df_acquisition['manure_dates'] = manure_dates
         
         # Add row to the list
         acquisitions.append(df_acquisition)
@@ -126,7 +116,7 @@ def get_features(fields_df, start_date, end_date, sentinel):
     time.
 
     Args:
-        fields_df (pandas DataFrame): A DataFrame containing the crop field name, manure dates, and polygon coordinates for each field.
+        fields_df (pandas DataFrame): A DataFrame containing the crop field name and polygon coordinates for each field.
         start_date (str): The start date of the date range to filter the collection by.
         end_date (str): The end date of the date range to filter the collection by.
         sentinel (int): The type of sentinel satellite to use (1 = radar, 2 = optical).
@@ -134,7 +124,7 @@ def get_features(fields_df, start_date, end_date, sentinel):
     Returns:
         pd.DataFrame: A pandas DataFrame containing the calculated indices for each acquisition date, for each field within
         the specified date range and using the selected sentinel satellite. The DataFrame includes columns for the crop 
-        details (name, manure date), acquisition date and calculated indices. The calculated indices depend on the selected
+        details, acquisition date and calculated indices. The calculated indices depend on the selected
         sentinel.
     """
     # Create an empty list to store the data for each field

@@ -24,7 +24,7 @@ Furthermore, it works in parallel in order to exploit the entire computational p
 Please consider that, for usability reasons some filters have been fixed (like the pixel cloudy percentage, and other things). See the [code](sentinel_satellites.py) for having a better understanding.
 
 ## Input DataFrame
-The input DataFrame, lets suppose named `fields_df`, should be structured as follows:
+The input DataFrame, lets suppose named `fields_df`, should be structured as follows (just columns position matters):
 
 | crop_field_name |              polygon_coordinates                  |
 |-----------------|---------------------------------------------------|
@@ -46,7 +46,7 @@ ee.Authenticate()
 ee.Initialize()
 ```
 
-Then, supposing you have already loaded the `fields_df` pandas DataFrame you have just to run the following code. You can change the `sentinel ID`, in case you want to get the sentinel 1 features extracted for the crop fields specified (within the time period selected).
+Then, supposing you have already loaded the `fields_df` pandas DataFrame you have just to run the following code. You can change the `sentinel ID`, in case you want to get the sentinel `1` features extracted for the crop fields specified (within the time period selected).
 
 ```python
 df = sentinel_satellites.get_features(fields_df, "2022-01-01", "2022-12-31", sentinel=2)
@@ -67,3 +67,6 @@ P-VG2 | 2022-12-05 | 0.646324 |	-0.349386 | 0.188256 | 0.010998 | 0.373301 | 0.1
 
 ***
 ***
+## What's new (`version: 0.0.5`)?
+* Refactoring code in `get_features()` function, such that column names in the passed pandas DataFrame that contains field name and coordinates does not matter (just column position matters)
+* 
