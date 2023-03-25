@@ -1,40 +1,69 @@
 import ee, pandas as pd
 
 
-def calculate_ndvi(image, date, polygon):
+def calculate_ndvi(image, date, polygon, type="", id=None):
     """
-    Calculates the NDVI index for a given image, date, and polygon.
+    Calculates the xNDVI index for a given image, date, and polygon.
     
-    NDVI (Normalized Difference Vegetation Index), is a remote sensing index used to assess vegetation
-    health and density. It is based on the principle that healthy vegetation strongly absorbs visible light 
-    (primarily in the blue and red wavelengths) and reflects near-infrared light. 
-    The NDVI is calculated as the normalized difference between near-infrared (NIR) and red light, as shown in the 
-    formula below:
-        NDVI = (NIR - red) / (NIR + red)
+    While all of the listed NDVI indices are used to assess vegetation health and density, they differ in 
+    the specific wavelengths of light that are used to calculate the index:
+    - NDVI (Normalized Difference Vegetation Index) uses the difference between visible red and near-infrared wavelengths of light.
+    - NSNDVI (NIR-SWIR NDVI) uses the difference between near-infrared and shortwave infrared wavelengths of light.
+    - GNDVI (Green NDVI) uses the difference between green and near-infrared wavelengths of light.
+    - RENDVI (Red Edge NDVI) uses the difference between red edge and near-infrared wavelengths of light.
+    - GRNDVI (Green-Red NDVI) uses the difference between green and red wavelengths of light.
+    - GBNDVI (Green-Blue NDVI) uses the difference between green and blue wavelengths of light.
 
-    The resulting values range from -1 to 1, with higher values indicating more vegetation and healthier vegetation.
-    NDVI is commonly used in applications such as agriculture, forestry, and ecology to monitor vegetation growth and
-    health over time.
+    Each of these indices may have different strengths and weaknesses depending on the specific vegetation types
+    and environmental conditions being studied. For example, some indices may be more sensitive to vegetation 
+    stress or changes in leaf structure than others. Therefore, researchers and practitioners may choose 
+    different NDVI indices depending on their specific research questions and the available data.
 
     Args:
         image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
         date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
         polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
-        
+        type (str): The type of normalized difference vegetation index to calculate (default is 'NDVI'). 
+            Other options include 'NS', 'G', 'RE', 'GR and 'GB'.
+        id (int): The id of the specified type of normalized difference vegetation index to calculate (it 
+            is used just for the RENDVI actually)
+            
     Returns:
-        float: the calculated NDVI value, for the specified date and polygon.
+        float: the calculated xNDVI value, for the specified date and polygon.
     """
     # Filter image collection to get the image for the date
     image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
 
     # Calculate NDVI
-    ndvi = image.normalizedDifference(['B8', 'B4']).rename('NDVI')
+    if (type == ""):
+        ndvi = image.normalizedDifference(['B8', 'B4']).rename('NDVI')
+    elif (type == "NS"):
+        ndvi = image.normalizedDifference(['B11', 'B7']).rename('NSNDVI')
+    elif (type == "G"):
+        ndvi = image.normalizedDifference(['B8', 'B3']).rename('GNDVI')
+    elif (type == "RE"):
+        if (id == 1):
+            ndvi = image.normalizedDifference(['B5', 'B4']).rename('RENDVI1')
+        elif (id == 2):
+            ndvi = image.normalizedDifference(['B6', 'B4']).rename('RENDVI2')
+        elif (id == 3):
+            ndvi = image.normalizedDifference(['B7', 'B4']).rename('RENDVI3')
+    elif (type == "GR"):
+        b3 = image.select('B3')
+        b4 = image.select('B4')
+        b8 = image.select('B8')
+        ndvi = ((b8.subtract(b3.add(b4)))).divide(b8.add(b3.add(b4))).rename('GRNDVI')
+    elif (type == "GB"):
+        b2 = image.select('B2')
+        b3 = image.select('B3')
+        b8 = image.select('B8')
+        ndvi = ((b8.subtract(b3.add(b2)))).divide(b8.add(b3.add(b2))).rename('GBNDVI')
 
     # Mask out clouds and shadows
     ndvi = ndvi.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
 
-    # Calculate the mean NDVI for the field polygon
-    return ndvi.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['NDVI']
+    # Calculate the mean xNDVI for the field polygon
+    return ndvi.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()[type + 'NDVI' + '' if id == None else str(id)]
 
 
 def calculate_eomi(image, date, polygon, id):
@@ -88,19 +117,23 @@ def calculate_savi(image, date, polygon, type=""):
     - SAVI (Soil Adjusted Vegetation Index) was developed to minimize the influence of soil brightness on vegetation indices. 
       SAVI uses a soil adjustment factor to reduce the noise caused by soil brightness. It is particularly useful in areas 
       with sparse vegetation.
-    - OSAVI (Optimized Soil Adjusted Vegetation Index) is similar to SAVI, but it has been optimized to better handle areas
+    - OSAVI (Optimized SAVI) is similar to SAVI, but it has been optimized to better handle areas
       with dense vegetation. OSAVI was developed to reduce the saturation effect seen in SAVI at high vegetation densities.
-    - MSAVI (Modified Soil Adjusted Vegetation Index) is a modification of SAVI that is designed to reduce the noise and saturation
+    - MSAVI (Modified SAVI) is a modification of SAVI that is designed to reduce the noise and saturation
       issues in areas with dense vegetation. MSAVI is often used in agricultural applications.
-    - TSAVI (Transformed Soil Adjusted Vegetation Index) is a variation of SAVI that uses a different soil adjustment factor to
+    - TSAVI (Transformed SAVI) is a variation of SAVI that uses a different soil adjustment factor to
       reduce the influence of soil brightness on vegetation indices. TSAVI is particularly useful in arid and semi-arid regions.
+    - ATSAVI (Adjusted Transformed SAVI) an extension of TSAVI that further accounts for atmospheric interference. It uses an additional
+      atmospheric correction factor to account for the influence of aerosols and atmospheric conditions on vegetation indices.
+      This makes it more effective than TSAVI in areas with high aerosol content or other atmospheric disturbances, such as urban 
+      areas or areas affected by wildfires.
     
     Args:
         image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
         date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
         polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
         type (str): The type of vegetation index to calculate (default is 'SAVI'). Other options include 'M', 
-                    'O', and 'T'.
+                    'O', 'T' and 'AT'.
     
     Returns:
         float: the mean value of the specified xSAVI, for the specified date and polygon.
@@ -113,16 +146,18 @@ def calculate_savi(image, date, polygon, type=""):
     red = image.select('B4')
 
     # Calculate the specified vegetation index
-    if type == '':
+    if (type == ''):
         L = 0.428
         savi = (nir.subtract(red)).divide(nir.add(red).add(L)).multiply(1 + L).rename('SAVI')
-    elif type == 'M':
+    elif (type == 'M'):
         savi = nir.multiply(2.0).add(1.0).subtract(nir.multiply(2.0).add(1.0).pow(2).subtract(nir.subtract(red).multiply(8.0)).sqrt()).divide(2.0).rename('MSAVI')
-    elif type == 'O':
+    elif (type == 'O'):
         savi = nir.subtract(red).multiply(1.0 + 0.16).divide(nir.add(red).add(0.16)).rename('OSAVI')
-    elif type == 'T':
+    elif (type == 'T'):
         X, A, B = 0.114, 0.824, 0.421
         savi = nir.subtract(B.multiply(red).subtract(A)).multiply(B).divide(red.add(B.multiply(nir.subtract(A))).add(X.multiply(1.0 + B.pow(2.0)))).rename('TSAVI')
+    elif (type == 'AT'):
+        savi = nir.subtract(1.22.multiply(red).subtract(0.03)).divide(nir.add(red).subtract(1.22.multiply(0.03)).add(0.08.multiply(1.0.add(1.22.pow(2.0))))).rename('ATSAVI')
 
     # Mask out clouds and shadows
     savi = savi.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
@@ -131,15 +166,13 @@ def calculate_savi(image, date, polygon, type=""):
     return savi.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()[type + 'SAVI']
 
 
-def calculate_nbr2(image, date, polygon):
+def calculate_nbr(image, date, polygon, id=None):
     """
-    Calculate the NBR2 value for a specific date and polygon in a Sentinel-2 image collection
+    Calculate the Normalized Burn Ratio (NBR) value for a specific date and polygon in a Sentinel-2 image collection
     
-    The Normalized Burn Ratio 2 (NBR2) is a remote sensing index used to detect and quantify the severity of burn scars
-    caused by wildfires. It is an enhancement of the original Normalized Burn Ratio (NBR) index, which was developed for 
-    the same purpose. The NBR2 is calculated as follows:
-        NBR2 = (NIR - SWIR2) / (NIR + SWIR2)
-
+    The Normalized Burn Ratio is a remote sensing index used to detect and quantify the severity of burn scars
+    caused by wildfires. 
+    NBR2 is an enhancement of the original Normalized Burn Ratio (NBR) index, which was developed for the same purpose.
     The NBR2 index is sensitive to changes in the vegetation and the charred biomass resulting from a fire, as well as the 
     presence of unburned vegetation and soil background. 
     The values of NBR2 range from -1 to 1, with higher values indicating more severe burn scars. The index is particularly 
@@ -150,6 +183,7 @@ def calculate_nbr2(image, date, polygon):
         image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
         date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
         polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        id (int): The id of the NBR to be calculated (default is the standard version).
     
     Returns:
         float: the mean NBR2 value, for the specified date and polygon.
@@ -157,14 +191,17 @@ def calculate_nbr2(image, date, polygon):
     # Filter image collection to get the image for the date
     image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
 
-    # Calculate NBR2
-    nbr2 = image.normalizedDifference(['B11', 'B12']).rename('NBR2')
+    # Calculate NBR
+    if (id == None):
+        nbr = image.normalizedDifference(['B8', 'B12']).rename('NBR')
+    elif (id == 2):
+        nbr = image.normalizedDifference(['B11', 'B12']).rename('NBR2')
 
     # Mask out clouds and shadows
-    nbr2 = nbr2.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
+    nbr = nbr.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
 
     # Calculate the mean NDVI for the field polygon
-    return nbr2.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['NBR2']
+    return nbr.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['NBR' + str(id) if id != None else '']
 
 
 def get_band(image, date, polygon, id):
