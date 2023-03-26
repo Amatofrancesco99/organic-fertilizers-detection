@@ -69,4 +69,5 @@ P-VG2 | 2022-12-05 | 0.646324 |	-0.349386 | 0.188256 | 0.010998 | 0.373301 | 0.1
 ***
 ## What's new (`version: 0.0.5`)?
 * Refactoring code in `get_features()` function, such that column names in the passed pandas DataFrame that contains field name and coordinates does not matter (just column position matters)
-* 
+* Added a lot of optical features
+* Fixed bug case occurring when `fields_df` has just one field inside

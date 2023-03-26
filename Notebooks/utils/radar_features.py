@@ -1,8 +1,8 @@
 import ee, pandas as pd
 
 
-def calculate_bsi(image, date, polygon, type=""):
-    """
+def calculate_backscatter_based_index(image, date, polygon, type=''):
+    '''
     Calculate the BackScatter-Based Index (BSI), Polarimetric BackScatter-Based Index (PBSI),
     or Co-Polarized Polarimetric BackScatter-Based Index (CPBSI) for a specific date and polygon in a
     Sentinel-1 image collection.
@@ -22,7 +22,7 @@ def calculate_bsi(image, date, polygon, type=""):
     
     Returns:
         float: the mean BSI, PBSI, or CPBSI value, for the specified date and polygon.
-    """
+    '''
     # Filter image collection to get the image for the date
     image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
 
@@ -50,8 +50,8 @@ def calculate_bsi(image, date, polygon, type=""):
     return bsi.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()[type + 'BSI']
 
 
-def calculate_tirs(image, date, polygon):
-    """
+def calculate_roughness_variation_index(image, date, polygon):
+    '''
     Calculate the Index of Variation of Roughness (TIRS) for a specific date and polygon in a
     Sentinel-1 image collection.
 
@@ -67,7 +67,7 @@ def calculate_tirs(image, date, polygon):
 
     Returns:
         float: the mean TIRS value for the specified date and polygon.
-    """
+    '''
     # Filter image collection to get the image for the date
     image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
 
