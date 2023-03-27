@@ -11,17 +11,17 @@ How to install it?
 $ pip install sentinel-satellites
 ```
 
-This library is composed of some main functions, each of them is described in this README.
+This library is composed of lot of functions, the main ones are here described.
 
 *** 
 ***
-## get_features() function
+## `get_features()` function
 
-The ```get_features()``` function allows to get from a pandas DataFrame composed of crop fields information, a start date, an end date, and a sentinel integer as inputs. It returns a pandas DataFrame of calculated indices for each field and acquisition date within the specified date range, using the selected sentinel satellite.
+It allows to get from a pandas DataFrame composed of crop fields information, another DataFrame that contains calculated indices for each field and acquisition date within the specified date range, using the selected sentinel satellite.
 
-Furthermore, it works in parallel in order to exploit the entire computational power of the machine on which you are running this function (load balanced the work of each core).
+Furthermore, it works in parallel in order to exploit the entire computational power of the machine on which you are running this function (load balanced the work of each core). <br>Consider that the parameter `fields_threads` is the number of threads to dedicate to parallelization over the fields level, the remaining part instead is used to apply parallelization over dates level. The value of this parameter should be high (with respect to the overall number of threads exploitable - see your computer specifications) if you have a lot of crop fields but a little time-span to consider, whereas if you have fewer fields but a bigger time-span you should decrease this parameter. Finally, if you have lot of fields with lot of dates to process it should may be optimal considering half of the overall number of threads available.
 
-Please consider that, for usability reasons some filters have been fixed (like the pixel cloudy percentage, and other things). See the [code](sentinel_satellites.py) for having a better understanding.
+For usability reasons some filters have been fixed (like the pixel cloudy percentage, and other things). See the [code](https://github.com/Amatofrancesco99/master-thesis/blob/main/Notebooks/utils/sentinel_satellites.py) for a better understanding.
 
 ## Input DataFrame
 The input DataFrame, lets suppose named `fields_df`, should be structured as follows (just columns position matters):
@@ -46,10 +46,10 @@ ee.Authenticate()
 ee.Initialize()
 ```
 
-Then, supposing you have already loaded the `fields_df` pandas DataFrame you have just to run the following code. You can change the `sentinel ID`, in case you want to get the sentinel `1` features extracted for the crop fields specified (within the time period selected).
+Then, supposing that you have already loaded the `fields_df` pandas DataFrame, you have just to run the following code. Change the `sentinel` number, in case you want sentinel `1` features extracted for the crop fields specified (within the time period selected).
 
 ```python
-df = sentinel_satellites.get_features(fields_df, "2022-01-01", "2022-12-31", sentinel=2)
+df = sentinel_satellites.get_features(fields_df, "2022-01-01", "2022-12-31", sentinel=2, fields_threads=3)
 ```
 
 ## Output DataFrame
@@ -67,7 +67,15 @@ P-VG2 | 2022-12-05 | 0.646324 |	-0.349386 | 0.188256 | 0.010998 | 0.373301 | 0.1
 
 ***
 ***
-## What's new (`version: 0.0.5`)?
-* Refactoring code in `get_features()` function, such that column names in the passed pandas DataFrame that contains field name and coordinates does not matter (just column position matters)
-* Added a lot of optical features
-* Fixed bug case occurring when `fields_df` has just one field inside
+## What's new?
+* `version: 0.0.5`:
+    * Code refactoring and improved descriptions
+    * Now, in `get_features()` function, column names in the passed pandas DataFrame that contains field name and coordinates does not matter (just column position matters)
+    * Added new optical features
+    * Fixed bug case occurring when `fields_df` has just one field inside
+    * Improving parallelization. Now each thread does not only works on gathering all features for a single field, but also on computing them on dates chunks
+
+* `version: 0.0.6` (current):
+    * Code refactoring and improved descriptions
+    * Fixed issues in calling `radar_features` functions and other minor bugs
+    * Added new radar features
