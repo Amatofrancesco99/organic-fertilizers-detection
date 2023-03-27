@@ -153,7 +153,7 @@ def parallelize_features_read(s_filtered, date_range, polygon, field_col_name, f
     '''
     # Split date range into multiple chunks
     ThreadPoolExecutor = concurrent.futures.ThreadPoolExecutor()
-    num_chunks = (ThreadPoolExecutor._max_workers - already_occupied_threads) // already_occupied_threads
+    num_chunks = ThreadPoolExecutor._max_workers - already_occupied_threads
     chunk_size = len(date_range) // num_chunks
     date_chunks = [date_range[i:i+chunk_size] for i in range(0, len(date_range), chunk_size)]
 
