@@ -84,11 +84,11 @@ def calculate_vegetation_index(image, date, polygon, type, id=None):
     # Calculate SAVI
     elif (type == 'SA'):
         L = 0.428
-        vi = (nir.subtract(red)).divide(nir.add(red).add(L)).multiply(1 + L).rename('SAVI')
+        vi = (nir.subtract(red)).divide((nir.add(red).add(L)).multiply(1 + L)).rename('SAVI')
     elif (type == 'MSA'):
         vi = nir.multiply(2.0).add(1.0).subtract(nir.multiply(2.0).add(1.0).pow(2).subtract(nir.subtract(red).multiply(8.0)).sqrt()).divide(2.0).rename('MSAVI')
     elif (type == 'OSA'):
-        vi = nir.subtract(red).multiply(1.0 + 0.16).divide(nir.add(red).add(0.16)).rename('OSAVI')
+        vi = (nir.subtract(red).multiply(1.0 + 0.16)).divide(nir.add(red).add(0.16)).rename('OSAVI')
     elif (type == 'TSA'):
         X, A, B = 0.114, 0.824, 0.421
         vi = nir.subtract(ee.Image.constant(B).multiply(red).subtract(A)).multiply(B).divide(red.add(ee.Image.constant(B).multiply(nir.subtract(A))).add(ee.Image.constant(X).multiply(1 + B ** 2.0))).rename('TSAVI')
@@ -97,7 +97,7 @@ def calculate_vegetation_index(image, date, polygon, type, id=None):
 
     # Other VIs
     elif (type == 'A'):
-        vi = nir.multiply((ee.Image.constant(1.0).subtract(red))).multiply(nir.subtract(red)).pow(1.0/3.0).rename('AVI')
+        vi = (nir.multiply((ee.Image.constant(1.0).subtract(red))).multiply(nir.subtract(red))).pow(1.0/3.0).rename('AVI')
     elif (type == 'AR'):
         b2 = image.select('B2')
         b8a = image.select('B8A')
@@ -107,7 +107,7 @@ def calculate_vegetation_index(image, date, polygon, type, id=None):
             vi = ee.Image.constant(-0.18).add(ee.Image.constant(1.17).multiply(nir.subtract(red).divide(nir.add(red)))).rename('ARVI2')
     elif (type == 'C'):
         b3 = image.select('B3')
-        vi = nir.multiply(red).divide(b3.pow(2.0)).rename('CVI')
+        vi = (nir.multiply(red)).divide(b3.pow(2.0)).rename('CVI')
     elif (type == 'CT'):
         b3 = image.select('B3')
         vi = (red.subtract(b3).divide(red.add(b3))).add(0.5).divide((red.subtract(b3).divide(red.add(b3))).add(0.5).abs()).multiply(((red.subtract(b3).divide(red.add(b3))).add(0.5)).abs().sqrt()).rename('CTVI')
@@ -116,15 +116,15 @@ def calculate_vegetation_index(image, date, polygon, type, id=None):
     elif (type == 'E'):
         if (id == 1):
             b2 = image.select('B2')
-            vi = nir.subtract(red).multiply(2.5).divide(nir.add(red.multiply(6.0)).subtract(b2.multiply(7.5)).add(1.0)).rename('EVI1')
+            vi = (nir.subtract(red).multiply(2.5)).divide((nir.add(red.multiply(6.0)).subtract(b2.multiply(7.5))).add(1.0)).rename('EVI1')
         elif (id == 2):
-            vi = nir.subtract(red).multiply(2.4).divide(nir.add(red).add(1.0)).rename('EVI2')
+            vi = (nir.subtract(red).multiply(2.4)).divide(nir.add(red).add(1.0)).rename('EVI2')
         elif (id == 3):
-            vi = nir.subtract(red).multiply(2.5).divide(nir.add(red.multiply(2.4)).add(1.0)).rename('EVI3')
+            vi = (nir.subtract(red).multiply(2.5)).divide(nir.add(red.multiply(2.4)).add(1.0)).rename('EVI3')
     elif (type == 'MT'):
         b3 = image.select('B3')
         if (id == 1):
-            vi = nir.subtract(b3).multiply(1.2).subtract(red.subtract(b3).multiply(2.5)).multiply(1.2).rename('MTVI1')
+            vi = (nir.subtract(b3).multiply(1.2).subtract(red.subtract(b3).multiply(2.5))).multiply(1.2).rename('MTVI1')
         elif (id == 2):
             vi = nir.subtract(b3).multiply(1.2).subtract(red.subtract(b3).multiply(2.5)).multiply(1.5).divide((ee.Image.constant(2.0).multiply(nir).add(1.0)).pow(2.0).subtract(ee.Image.constant(6.0).multiply(nir).subtract(red.sqrt()).multiply(5.0)).subtract(0.5).sqrt()).rename('MTVI2')
     elif (type == 'R'):
@@ -380,9 +380,9 @@ def calculate_modified_chlorophyll_absorption_reflectance_index(image, date, pol
 
     # Calculate MCARI (different with respect to the passed id)
     if (id == None):
-        mcari = ((image.select('B5').subtract(image.select('B4'))).subtract(image.select('B3').multiply(0.2))).multiply(image.select('B5').divide(image.select('B4'))).rename('MCARI')
+        mcari = ((image.select('B5').subtract(image.select('B4'))).subtract(image.select('B5').subtract(image.select('B3').multiply(0.2)))).multiply(image.select('B5').divide(image.select('B4'))).rename('MCARI')
     elif (id == 1):
-        mcari = (image.select('B8').subtract(image.select('B4')).multiply(2.5)).subtract(image.select('B8').subtract(image.select('B3')).multiply(1.3)).rename('MCARI1')
+        mcari = ee.Image.constant(1.2).multiply((image.select('B8').subtract(image.select('B4')).multiply(2.5)).subtract(image.select('B8').subtract(image.select('B3')).multiply(1.3))).rename('MCARI1')
     elif (id == 2):
         b4 = image.select('B4')
         b8 = image.select('B8')
@@ -420,10 +420,16 @@ def calculate_chlorophyll_absorption_ratio_index(image, date, polygon, id):
 
     # Calculate CARI
     if (id == 1):
-        cari = (image.select('B5').divide(image.select('B4'))).multiply((ee.Image(((((image.select('B5').subtract(image.select('B3'))).divide(150.0)).multiply(670.0)).add(image.select('B4')).add((image.select('B3')).subtract((image.select('B5').subtract(image.select('B3'))).divide(150.0)).multiply(550.0)))).pow(2)).sqrt()).divide(((image.select('B5').subtract(image.select('B3'))).divide(150.0 ** 2).add(1)).pow(0.5)).rename('CARI1')
+        cari = image.select('B5').divide(image.select('B4')) \
+                .multiply((ee.Image(((image.select('B5').subtract(image.select('B3'))).divide(150.0)).multiply(670.0)).add(image.select('B4')).add((image.select('B3')).subtract((image.select('B5').subtract(image.select('B3'))).divide(150.0)).multiply(550.0))).pow(2).sqrt()) \
+                .divide(((image.select('B5').subtract(image.select('B3'))).divide(150.0).pow(2).add(1)).pow(0.5)) \
+                .rename('CARI1')
     elif (id == 2):
-        cari = (ee.Image((ee.Image(image.select('B5').subtract(image.select('B3'))).divide(150.0)).multiply(image.select('B4')).add(image.select('B4')).add(image.select('B3')).subtract(ee.Image(0.496).multiply(image.select('B3')))).abs().divide((ee.Image(0.496).pow(2).add(1)).pow(0.5))).multiply(image.select('B5').divide(image.select('B4'))).rename('CARI2')
-
+        cari = ee.Image(((image.select('B5').subtract(image.select('B3'))).divide(150.0)).multiply(image.select('B4')).add(image.select('B4')).add(image.select('B3')).subtract(ee.Image(0.496).multiply(image.select('B3')))).abs() \
+                .divide((ee.Image(0.496).pow(2).add(1)).pow(0.5)) \
+                .multiply(image.select('B5').divide(image.select('B4'))) \
+                .rename('CARI2')
+        
     # Mask out clouds and shadows
     cari = cari.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
 
