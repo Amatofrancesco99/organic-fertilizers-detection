@@ -3,7 +3,7 @@ import ee, pandas as pd
 
 def get_band(image, date, polygon, id):
     '''
-    Calculate the Band X value for a specific date and polygon in a Sentinel-2 image collection
+    Calculate the Band X value for a specific date and polygon in a Sentinel-2 image collection.
     
     Spectral bands refer to specific ranges of electromagnetic radiation (EMR) that are used in remote sensing 
     applications to capture information about the earth's surface. Spectral bands are usually defined by their
@@ -185,7 +185,7 @@ def calculate_exogenous_organic_matter_index(image, date, polygon, id):
 
 def calculate_normalized_burn_ratio(image, date, polygon, id=None):
     '''
-    Calculate the Normalized Burn Ratio (NBR) value for a specific date and polygon in a Sentinel-2 image collection
+    Calculate the Normalized Burn Ratio (NBR) value for a specific date and polygon in a Sentinel-2 image collection.
     
     The Normalized Burn Ratio is a remote sensing index used to detect and quantify the severity of burn scars
     caused by wildfires. 
@@ -261,7 +261,7 @@ def calculate_chlorophyll_index(image, date, polygon, id):
 
 def calculate_green_coverage_index(image, date, polygon):
     '''
-    Calculate the Green Coverage Index (GCI) for a specific date and polygon in a Sentinel-2 image collection
+    Calculate the Green Coverage Index (GCI) for a specific date and polygon in a Sentinel-2 image collection.
     
     GCI is a vegetation index that is designed to be less sensitive to atmospheric and soil background effects. It can 
     be used to estimate the fractional green vegetation cover in a given area.
@@ -472,7 +472,7 @@ def calculate_bare_soil_index(image, date, polygon):
 
 def calculate_green_leaf_index(image, date, polygon):
     '''
-    Calculate the Green Leaf Index (GLI) for a specific date and polygon in a Sentinel-2 image collection
+    Calculate the Green Leaf Index (GLI) for a specific date and polygon in a Sentinel-2 image collection.
     
     GLI is a vegetation index that is designed to be less sensitive to atmospheric and soil background effects. It can 
     be used to estimate the fractional green vegetation cover in a given area.
@@ -505,7 +505,7 @@ def calculate_green_leaf_index(image, date, polygon):
 
 def calculate_alteration_index(image, date, polygon):
     '''
-    Calculate the Alteration index for a specific date and polygon in a Sentinel-2 image collection
+    Calculate the Alteration index for a specific date and polygon in a Sentinel-2 image collection.
     
     Alteration index is used to map the presence of Al-OH or Fe-OH minerals in rocks, and is particularly useful in 
     mapping alteration zones around ore deposits.
