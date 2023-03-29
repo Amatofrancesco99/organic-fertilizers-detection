@@ -23,14 +23,20 @@ def process_chunk(s_filtered, chunk, polygon, field_col_name, field_name, sentin
     acquisitions = []
     for date in chunk:
         if (sentinel == 1):
-            bsi = radar_features.calculate_backscatter_based_index(s_filtered, date, polygon)
-            pbsi = radar_features.calculate_backscatter_based_index(s_filtered, date, polygon, 'P')
-            cpbsi = radar_features.calculate_backscatter_based_index(s_filtered, date, polygon, 'CP')
-            tirs = radar_features.calculate_roughness_variation_index(s_filtered, date, polygon)
+            vv = radar_features.get_polarization(s_filtered, date, polygon, 'VV')
+            vh = radar_features.get_polarization(s_filtered, date, polygon, 'VH')
+            ave = radar_features.calculate_simple_index(s_filtered, date, polygon, 'AVE')
+            dif = radar_features.calculate_simple_index(s_filtered, date, polygon, 'DIF')
+            rat1 = radar_features.calculate_simple_index(s_filtered, date, polygon, 'RAT1')
+            rat2 = radar_features.calculate_simple_index(s_filtered, date, polygon, 'RAT2')
+            ndi = radar_features.calculate_normalized_difference_index(s_filtered, date, polygon)
+            rvi = radar_features.calculate_radar_vegetation_index(s_filtered, date, polygon)
 
             # Create a dataframe row for the date
             df_acquisition= {str(field_col_name): field_name, 's1_acquisition_date': date,
-                    'BSI': bsi, 'PBSI': pbsi, 'CPBSI': cpbsi, 'TIRS': tirs}
+                        'VV': vv, 'VH': vh, 
+                        'AVE': ave, 'DIF': dif, 'RAT1': rat1, 'RAT2': rat2, 
+                        'NDI': ndi, 'RVI': rvi}
         
         elif (sentinel == 2):
             # Calculate standard bands
@@ -203,7 +209,7 @@ def process_field(field, start_date, end_date, sentinel, already_occupied_thread
         # Filter Sentinel 2 collection
         s_collection = ee.ImageCollection('COPERNICUS/S2_SR')
         s_filtered = s_collection.filterBounds(polygon).filterDate(str(start_date), str(end_date)) \
-                                .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 30))
+                                .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 25))
         
     # Get distinct dates from the Sentinel 1 collection and put into the date_range list
     s_dates = s_filtered.aggregate_array('system:time_start').map(lambda time_start: ee.Date(time_start).format('YYYY-MM-dd'))
@@ -260,4 +266,7 @@ def get_features(fields_df, start_date, end_date, sentinel, fields_threads):
             df_list.extend(future.result())
 
     # Create a dataframe from the list of rows
-    return pd.DataFrame(df_list)
+    df = pd.DataFrame(df_list)
+    
+    # Sorting by crop field name and acquisition date and return the sorted DataFrame
+    return df.sort_values([str(df.columns[0]), str(df.columns[1])], ascending=[True, True])
