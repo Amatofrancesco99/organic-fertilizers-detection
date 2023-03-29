@@ -75,9 +75,12 @@ P-VG2 | 2022-12-05 | 0.646324 |	-0.349386 | 0.188256 | 0.010998 | 0.373301 | 0.1
     * Fixed bug case occurring when `fields_df` has just one field inside
     * Improving parallelization. Now each thread does not only work on gathering all features for a single field, but also on computing them on dates chunks
 
-* `version: 0.0.6` (current):
+* `version: 0.0.6`:
     * Code refactoring and improved descriptions
     * Fixed issues in calling `radar_features` functions and other minor bugs
     * Added new radar features
     * Reduced the `CLOUDY_PIXEL_PERCENTAGE` parameter to `25` (for optical features extraction)
     * The output DataFrame is now ordered by the first two columns (`field_name` & `acquisition_date`), in ascending order 
+
+* `version: 0.0.7` (current):
+    * Fixed `EOMI3` formula

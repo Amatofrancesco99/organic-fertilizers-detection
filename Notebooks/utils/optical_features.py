@@ -172,7 +172,7 @@ def calculate_exogenous_organic_matter_index(image, date, polygon, id):
         b8a = image.select('B8A')
         b12 = image.select('B12')
         b4 = image.select('B4')
-        eomi = ((b11.subtract(b8a)).add(b12.add(b4))).divide(b11.add(b8a).add(b12).add(b4)).rename('EOMI3')
+        eomi = ((b11.subtract(b8a)).add(b12.subtract(b4))).divide(b11.add(b8a).add(b12).add(b4)).rename('EOMI3')
     if (id == 4):
         eomi = image.normalizedDifference(['B11', 'B4']).rename('EOMI4')
 
