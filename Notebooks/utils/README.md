@@ -56,9 +56,9 @@ df = sentinel_satellites.get_features(fields_df, "2022-01-01", "2022-12-31", sen
 The output generated DataFrame, namely `df`, will be structured as follows:
 | crop_field_name | s2_acquisition_date | NDVI      | EOMI1     | EOMI2     | EOMI3     | EOMI4     | NBR2      | SAVI      | MSAVI     | ...   |
 |----------------|---------------------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|----------------|
-P-FNFR | 2022-01-06 | 0.729366 | -0.376095 | 0.220854 | -0.090378 |	0.504886 | 0.324869	| 1.041383 | 0.839771 |	... |
-P-FNFR | 2022-01-16	| 0.760237 | -0.338848 | 0.316256 | -0.060777 | 0.569916 | 	0.316494 | 1.085469 | 0.861267 | ... |
-P-FNFR | 2022-01-26 | 0.452795 | -0.198903 | 0.123193 |	0.202623 | 0.286175 | 0.169172 | 0.646540 |	0.618500 | ... |
+P-BLD | 2022-01-06 | 0.729366 | -0.376095 | 0.220854 | -0.090378 |	0.504886 | 0.324869	| 0.941383 | 0.839771 |	... |
+P-BLD | 2022-01-16	| 0.760237 | -0.338848 | 0.316256 | -0.060777 | 0.569916 | 	0.316494 | 0.885469 | 0.861267 | ... |
+P-BLD | 2022-01-26 | 0.452795 | -0.198903 | 0.123193 |	0.202623 | 0.286175 | 0.169172 | 0.646540 |	0.618500 | ... |
 ... | ... | ... | ... |	...	 | ... | ... | ... | ... | ... | ... | ...|
 P-VG2 |	2022-11-12 | 0.393333 | -0.133609 |	0.163594 | 0.268466 | 0.304470 | 0.148289 |	0.561634 | 0.562339 | ... |
 P-VG2 | 2022-11-17 | 0.308817 |	-0.158042 | 0.078185 | 0.292526 | 0.177674 | 0.100908 |	0.440931 | 0.470664 | ... |
@@ -73,9 +73,11 @@ P-VG2 | 2022-12-05 | 0.646324 |	-0.349386 | 0.188256 | 0.010998 | 0.373301 | 0.1
     * Now, in `get_features()` function, column names in the passed pandas DataFrame that contains field name and coordinates does not matter (just column position matters)
     * Added new optical features
     * Fixed bug case occurring when `fields_df` has just one field inside
-    * Improving parallelization. Now each thread does not only works on gathering all features for a single field, but also on computing them on dates chunks
+    * Improving parallelization. Now each thread does not only work on gathering all features for a single field, but also on computing them on dates chunks
 
 * `version: 0.0.6` (current):
     * Code refactoring and improved descriptions
     * Fixed issues in calling `radar_features` functions and other minor bugs
     * Added new radar features
+    * Reduced the `CLOUDY_PIXEL_PERCENTAGE` parameter to `25` (for optical features extraction)
+    * The output DataFrame is now ordered by the first two columns (`field_name` & `acquisition_date`), in ascending order 
