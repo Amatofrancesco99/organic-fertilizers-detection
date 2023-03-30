@@ -205,99 +205,6 @@
             "id": "3",
             "type": "Feature",
             "properties": {
-              "crop_field_name": "P-Cardana",
-              "manure_dates": [
-                "2022-02-24"
-              ]
-            },
-            "geometry": {
-              "type": "Polygon",
-              "coordinates": [
-                [
-                  [
-                    8.658803437240303,
-                    45.85842753378426
-                  ],
-                  [
-                    8.659361336715401,
-                    45.858760033348474
-                  ],
-                  [
-                    8.65914675999421,
-                    45.85884595987881
-                  ],
-                  [
-                    8.659066293834075,
-                    45.85893375417656
-                  ],
-                  [
-                    8.659018013961495,
-                    45.85903649214644
-                  ],
-                  [
-                    8.658929501236464,
-                    45.85910373860183
-                  ],
-                  [
-                    8.658808801658333,
-                    45.85923823148284
-                  ],
-                  [
-                    8.658572767265023,
-                    45.85933536497635
-                  ],
-                  [
-                    8.658411834724129,
-                    45.859275590538886
-                  ],
-                  [
-                    8.65825358439225,
-                    45.85939700729767
-                  ],
-                  [
-                    8.658241514680979,
-                    45.859448375798564
-                  ],
-                  [
-                    8.65814897824067,
-                    45.85969401025168
-                  ],
-                  [
-                    8.657719824798287,
-                    45.859436234193865
-                  ],
-                  [
-                    8.657998774535836,
-                    45.8592083442199
-                  ],
-                  [
-                    8.658191893584908,
-                    45.85896924553828
-                  ],
-                  [
-                    8.658503029830635,
-                    45.858730145828524
-                  ],
-                  [
-                    8.658701513297737,
-                    45.85861806748562
-                  ],
-                  [
-                    8.658701513297737,
-                    45.85853587655726
-                  ],
-                  [
-                    8.658803437240303,
-                    45.85842753378426
-                  ]
-                ]
-              ]
-            }
-        },
-        {   
-            "id": "4",
-            "type": "Feature",
-            "properties": {
               "crop_field_name": "P-CBRCS1",
               "manure_dates": [
                 "2022-05-26"
@@ -348,7 +255,7 @@
             }
         },
         {   
-            "id": "5",
+            "id": "4",
             "type": "Feature",
             "properties": {
                 "crop_field_name": "P-CBRCS2",
@@ -413,7 +320,7 @@
             }
         },
         {   
-            "id": "6",
+            "id": "5",
             "type": "Feature",
             "properties": {
                 "crop_field_name": "P-CLGT",
@@ -478,7 +385,7 @@
             }
         },
         {   
-            "id": "7",
+            "id": "6",
             "type": "Feature",
             "properties": {
               "crop_field_name": "P-CLMBRS",
@@ -531,7 +438,7 @@
             }
         },
         {
-            "id": "8",
+            "id": "7",
             "type": "Feature",
             "properties": {
                 "crop_field_name": "P-CMNTR",
@@ -592,7 +499,7 @@
             }
         },
         {
-            "id": "9",
+            "id": "8",
             "type": "Feature",
             "properties": {
                 "crop_field_name": "P-DR",
@@ -633,7 +540,7 @@
             }
         },
         {
-          "id": "10",
+          "id": "9",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-FNFR",
@@ -694,7 +601,7 @@
           }
         },
         { 
-          "id": "11",
+          "id": "10",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-LLT",
@@ -739,7 +646,7 @@
           }
         },
         {
-          "id": "12",
+          "id": "11",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-LNDRS1",
@@ -788,7 +695,7 @@
           }
         },
         {
-          "id": "13",
+          "id": "12",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-LNDRS2",
@@ -853,7 +760,7 @@
           }
         },
         {
-          "id": "14",
+          "id": "13",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-LNDRS3",
@@ -938,7 +845,7 @@
           }
         },
         {
-          "id": "15",
+          "id": "14",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-LNDRS4",
@@ -999,7 +906,7 @@
           }
         },
         {
-          "id": "16",
+          "id": "15",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-MT",
@@ -1276,7 +1183,7 @@
           }
         },
         {
-          "id": "17",
+          "id": "16",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-NMS",
@@ -1329,7 +1236,7 @@
           }
         },
         {
-          "id": "18",
+          "id": "17",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-QNTLS2",
@@ -1382,7 +1289,7 @@
           }
         },
         {
-          "id": "19",
+          "id": "18",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-SNTLLN",
@@ -1531,7 +1438,7 @@
           }
         },
         {
-          "id": "20",
+          "id": "19",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-SNVCNT1",
@@ -1576,7 +1483,7 @@
           }
         },
         {
-          "id": "21",
+          "id": "20",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-SNVCNT2",
@@ -1789,7 +1696,7 @@
           }
         },
         {
-          "id": "22",
+          "id": "21",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-STBN",
@@ -1878,7 +1785,7 @@
           }
         },
         {
-          "id": "23",
+          "id": "22",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-TGL2",
@@ -1979,7 +1886,7 @@
           }
         },
         {
-          "id": "24",
+          "id": "23",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-TNNS1",
@@ -2052,7 +1959,7 @@
           }
         },
         {
-          "id": "25",
+          "id": "24",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-TNNS2",
@@ -2145,7 +2052,7 @@
           }
         },
         {
-          "id": "26",
+          "id": "25",
           "type": "Feature",
           "properties": {
               "crop_field_name": "P-VG1",
@@ -2286,7 +2193,7 @@
           }
         },
         {
-          "id": "27",
+          "id": "26",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-VG2",
@@ -2427,7 +2334,7 @@
           }
         },
         {
-          "id": "28",
+          "id": "27",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-VLDMR",
@@ -2536,7 +2443,7 @@
           }
         },
         {
-          "id": "29",
+          "id": "28",
           "type": "Feature",
           "properties": {
             "crop_field_name": "P-VNS",
