@@ -23,102 +23,91 @@ def process_chunk(s_filtered, chunk, polygon, field_col_name, field_name, sentin
     acquisitions = []
     for date in chunk:
         if (sentinel == 1):
-            vv = radar_features.get_polarization(s_filtered, date, polygon, 'VV')
-            vh = radar_features.get_polarization(s_filtered, date, polygon, 'VH')
-            ave = radar_features.calculate_simple_index(s_filtered, date, polygon, 'AVE')
-            dif = radar_features.calculate_simple_index(s_filtered, date, polygon, 'DIF')
-            rat1 = radar_features.calculate_simple_index(s_filtered, date, polygon, 'RAT1')
-            rat2 = radar_features.calculate_simple_index(s_filtered, date, polygon, 'RAT2')
-            ndi = radar_features.calculate_normalized_difference_index(s_filtered, date, polygon)
-            rvi = radar_features.calculate_radar_vegetation_index(s_filtered, date, polygon)
+            polarizations_means = radar_features.get_all_polarizations(s_filtered, date, polygon)
+            ave = radar_features.calculate_simple_index(polarizations_means, 'AVE')
+            dif = radar_features.calculate_simple_index(polarizations_means, 'DIF')
+            rat1 = radar_features.calculate_simple_index(polarizations_means, 'RAT1')
+            rat2 = radar_features.calculate_simple_index(polarizations_means, 'RAT2')
+            ndi = radar_features.calculate_normalized_difference_index(polarizations_means)
+            rvi = radar_features.calculate_radar_vegetation_index(polarizations_means)
 
             # Create a dataframe row for the date
             df_acquisition= {str(field_col_name): field_name, 's1_acquisition_date': date,
-                        'VV': vv, 'VH': vh, 
+                        'VV': polarizations_means['VV'], 'VH': polarizations_means['VH'], 
                         'AVE': ave, 'DIF': dif, 'RAT1': rat1, 'RAT2': rat2, 
                         'NDI': ndi, 'RVI': rvi}
         
         elif (sentinel == 2):
             # Calculate standard bands
-            b1 = optical_features.get_band(s_filtered, date, polygon, '1')
-            b2 = optical_features.get_band(s_filtered, date, polygon, '2')
-            b3 = optical_features.get_band(s_filtered, date, polygon, '3')
-            b4 = optical_features.get_band(s_filtered, date, polygon, '4')
-            b5 = optical_features.get_band(s_filtered, date, polygon, '5')
-            b6 = optical_features.get_band(s_filtered, date, polygon, '6')
-            b7 = optical_features.get_band(s_filtered, date, polygon, '7')
-            b8 = optical_features.get_band(s_filtered, date, polygon, '8')
-            b8a = optical_features.get_band(s_filtered, date, polygon, '8A')
-            b9 = optical_features.get_band(s_filtered, date, polygon, '9')
-            b11 = optical_features.get_band(s_filtered, date, polygon, '11')
-            b12 = optical_features.get_band(s_filtered, date, polygon, '12')
+            bands_means = optical_features.get_all_bands(s_filtered, date, polygon)
             # Calculate vegetation indexes
-            ndvi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'ND')
-            nsndvi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'NSND')
-            gndvi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'GND')
-            rendvi1 = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'REND', 1)
-            rendvi2 = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'REND', 2)
-            rendvi3 = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'REND', 3)
-            grndvi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'GRND')
-            gbndvi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'GBND')
-            savi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'SA')
-            osavi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'OSA')
-            msavi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'MSA')
-            tsavi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'TSA')
-            atsavi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'ATSA')
-            rvi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'R')
-            dvi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'D')
-            cvi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'C')
-            ctvi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'CT')
-            avi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'A')
-            arvi1 = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'AR', 1)
-            arvi2 = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'AR', 2)
-            evi1 = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'E', 1)
-            evi2 = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'E', 2)
-            evi3 = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'E', 3)
-            wdrvi = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'WDR')
-            mtvi1 = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'MT', 1)
-            mtvi2 = optical_features.calculate_vegetation_index(s_filtered, date, polygon, 'MT', 2)
+            ndvi = optical_features.calculate_vegetation_index(bands_means, 'ND')
+            nsndvi = optical_features.calculate_vegetation_index(bands_means, 'NSND')
+            gndvi = optical_features.calculate_vegetation_index(bands_means, 'GND')
+            rendvi1 = optical_features.calculate_vegetation_index(bands_means, 'REND', 1)
+            rendvi2 = optical_features.calculate_vegetation_index(bands_means, 'REND', 2)
+            rendvi3 = optical_features.calculate_vegetation_index(bands_means, 'REND', 3)
+            grndvi = optical_features.calculate_vegetation_index(bands_means, 'GRND')
+            gbndvi = optical_features.calculate_vegetation_index(bands_means, 'GBND')
+            savi = optical_features.calculate_vegetation_index(bands_means, 'SA')
+            osavi = optical_features.calculate_vegetation_index(bands_means, 'OSA')
+            msavi = optical_features.calculate_vegetation_index(bands_means, 'MSA')
+            tsavi = optical_features.calculate_vegetation_index(bands_means, 'TSA')
+            atsavi = optical_features.calculate_vegetation_index(bands_means, 'ATSA')
+            rvi = optical_features.calculate_vegetation_index(bands_means, 'R')
+            dvi = optical_features.calculate_vegetation_index(bands_means, 'D')
+            cvi = optical_features.calculate_vegetation_index(bands_means, 'C')
+            ctvi = optical_features.calculate_vegetation_index(bands_means, 'CT')
+            avi = optical_features.calculate_vegetation_index(bands_means, 'A')
+            arvi1 = optical_features.calculate_vegetation_index(bands_means, 'AR', 1)
+            arvi2 = optical_features.calculate_vegetation_index(bands_means, 'AR', 2)
+            evi1 = optical_features.calculate_vegetation_index(bands_means, 'E', 1)
+            evi2 = optical_features.calculate_vegetation_index(bands_means, 'E', 2)
+            evi3 = optical_features.calculate_vegetation_index(bands_means, 'E', 3)
+            wdrvi = optical_features.calculate_vegetation_index(bands_means, 'WDR')
+            mtvi1 = optical_features.calculate_vegetation_index(bands_means, 'MT', 1)
+            mtvi2 = optical_features.calculate_vegetation_index(bands_means, 'MT', 2)
             # Calculate exogenous organic matter indexes
-            eomi1 = optical_features.calculate_exogenous_organic_matter_index(s_filtered, date, polygon, 1)
-            eomi2 = optical_features.calculate_exogenous_organic_matter_index(s_filtered, date, polygon, 2)
-            eomi3 = optical_features.calculate_exogenous_organic_matter_index(s_filtered, date, polygon, 3)
-            eomi4 = optical_features.calculate_exogenous_organic_matter_index(s_filtered, date, polygon, 4)
+            eomi1 = optical_features.calculate_exogenous_organic_matter_index(bands_means, 1)
+            eomi2 = optical_features.calculate_exogenous_organic_matter_index(bands_means, 2)
+            eomi3 = optical_features.calculate_exogenous_organic_matter_index(bands_means, 3)
+            eomi4 = optical_features.calculate_exogenous_organic_matter_index(bands_means, 4)
             # Calculate normalized burn ratio indexes
-            nbr = optical_features.calculate_normalized_burn_ratio(s_filtered, date, polygon)
-            nbr2 = optical_features.calculate_normalized_burn_ratio(s_filtered, date, polygon, 2)
+            nbr = optical_features.calculate_normalized_burn_ratio(bands_means)
+            nbr2 = optical_features.calculate_normalized_burn_ratio(bands_means, 2)
             # Calculate clorophyl indexes
-            ci1 = optical_features.calculate_chlorophyll_index(s_filtered, date, polygon, 1)
-            ci2 = optical_features.calculate_chlorophyll_index(s_filtered, date, polygon, 2)
-            ci3 = optical_features.calculate_chlorophyll_index(s_filtered, date, polygon, 3)
+            ci1 = optical_features.calculate_chlorophyll_index(bands_means, 1)
+            ci2 = optical_features.calculate_chlorophyll_index(bands_means, 2)
+            ci3 = optical_features.calculate_chlorophyll_index(bands_means, 3)
             # Calculate green coverage index
-            gci = optical_features.calculate_green_coverage_index(s_filtered, date, polygon)
+            gci = optical_features.calculate_green_coverage_index(bands_means)
             # Calculate soil composition index
-            sci = optical_features.calculate_soil_composition_index(s_filtered, date, polygon)
+            sci = optical_features.calculate_soil_composition_index(bands_means)
             # Calculate normalized difference red edge
-            ndre1 = optical_features.calculate_normalized_difference_red_edge(s_filtered, date, polygon, 1)
-            ndre2 = optical_features.calculate_normalized_difference_red_edge(s_filtered, date, polygon, 2)
-            ndre3 = optical_features.calculate_normalized_difference_red_edge(s_filtered, date, polygon, 3)
+            ndre1 = optical_features.calculate_normalized_difference_red_edge(bands_means, 1)
+            ndre2 = optical_features.calculate_normalized_difference_red_edge(bands_means, 2)
+            ndre3 = optical_features.calculate_normalized_difference_red_edge(bands_means, 3)
             # Calculate chlorophyll absorption ratio index
-            cari1 = optical_features.calculate_chlorophyll_absorption_ratio_index(s_filtered, date, polygon, 1)
-            cari2 = optical_features.calculate_chlorophyll_absorption_ratio_index(s_filtered, date, polygon, 2)
+            cari1 = optical_features.calculate_chlorophyll_absorption_ratio_index(bands_means, 1)
+            cari2 = optical_features.calculate_chlorophyll_absorption_ratio_index(bands_means, 2)
             # Calculate modified chlorophyll absorption in reflectance index
-            mcari = optical_features.calculate_modified_chlorophyll_absorption_reflectance_index(s_filtered, date, polygon)
-            mcari1 = optical_features.calculate_modified_chlorophyll_absorption_reflectance_index(s_filtered, date, polygon, 1)
-            mcari2 = optical_features.calculate_modified_chlorophyll_absorption_reflectance_index(s_filtered, date, polygon, 2)
+            mcari = optical_features.calculate_modified_chlorophyll_absorption_reflectance_index(bands_means)
+            mcari1 = optical_features.calculate_modified_chlorophyll_absorption_reflectance_index(bands_means, 1)
+            mcari2 = optical_features.calculate_modified_chlorophyll_absorption_reflectance_index(bands_means, 2)
             # Calculate bare soil index
-            bsi = optical_features.calculate_bare_soil_index(s_filtered, date, polygon)
+            bsi = optical_features.calculate_bare_soil_index(bands_means)
             # Calculate green leaf index
-            gli = optical_features.calculate_green_leaf_index(s_filtered, date, polygon)
+            gli = optical_features.calculate_green_leaf_index(bands_means)
             # Compute alteration index
-            alteration = optical_features.calculate_alteration_index(s_filtered, date, polygon)
+            alteration = optical_features.calculate_alteration_index(bands_means)
             # Compute SWIR Difference Index
-            sdi = optical_features.calculate_swir_difference_index(s_filtered, date, polygon)
+            sdi = optical_features.calculate_swir_difference_index(bands_means)
 
             # Create a dataframe row for the date
             df_acquisition= {str(field_col_name): field_name, 's2_acquisition_date': date, 
-                        'B1': b1, 'B2': b2, 'B3': b3, 'B4': b4, 'B5': b5, 'B6': b6, 'B7': b7,
-                        'B8': b8, 'B8A': b8a, 'B9': b9, 'B11': b11, 'B12': b12,     
+                        'B1': bands_means['B1'], 'B2': bands_means['B2'], 'B3': bands_means['B3'], 'B4': bands_means['B4'], 'B5': bands_means['B5'],
+                        'B6': bands_means['B6'], 'B7': bands_means['B7'], 'B8': bands_means['B8'], 'B8A': bands_means['B8A'], 'B9': bands_means['B9'],
+                        'B11': bands_means['B11'], 'B12': bands_means['B12'],     
                         'NDVI': ndvi, 'NSNDVI': nsndvi, 'GNDVI': gndvi, 'RENDVI1': rendvi1, 'RENDVI2': rendvi2,
                         'RENDVI3': rendvi3, 'GRNDVI': grndvi, 'GBNDVI': gbndvi,
                         'SAVI': savi, 'OSAVI': osavi, 'MSAVI': msavi, 'TSAVI': tsavi, 'ATSAVI': atsavi,
@@ -203,13 +192,13 @@ def process_field(field, start_date, end_date, sentinel, already_occupied_thread
         s_filtered = s_collection.filterBounds(polygon).filterDate(str(start_date), str(end_date)) \
                                     .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV')) \
                                     .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VH')) \
-                                    .filter(ee.Filter.eq('instrumentMode', 'IW')) \
-                                    .filterMetadata('resolution_meters', 'equals', 10)
+                                    .filter(ee.Filter.eq('instrumentMode', 'IW'))
+        
     elif (sentinel == 2):
         # Filter Sentinel 2 collection
         s_collection = ee.ImageCollection('COPERNICUS/S2_SR')
         s_filtered = s_collection.filterBounds(polygon).filterDate(str(start_date), str(end_date)) \
-                                .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 25))
+                                .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 40))
         
     # Get distinct dates from the Sentinel 1 collection and put into the date_range list
     s_dates = s_filtered.aggregate_array('system:time_start').map(lambda time_start: ee.Date(time_start).format('YYYY-MM-dd'))

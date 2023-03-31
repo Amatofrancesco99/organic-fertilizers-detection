@@ -1,9 +1,9 @@
 import ee, pandas as pd
 
 
-def get_polarization(image, date, polygon, type=''):
+def get_all_polarizations(image, date, polygon):
     '''
-    Calculate the polarization for a specific date and polygon in a Sentinel-1 image collection.
+    Calculate all the mean polarization values for a specific date and polygon in a Sentinel-1 image collection.
 
     Sentinel-1 is a satellite mission from the European Space Agency (ESA) that carries a Synthetic Aperture Radar (SAR) instrument. 
     The SAR system is capable of transmitting and receiving radar signals in different polarizations, which refers to the orientation 
@@ -19,22 +19,24 @@ def get_polarization(image, date, polygon, type=''):
         image (ee.ImageCollection): The Sentinel-1 image collection filtered by date and bounds.
         date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
         polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
-        type (str): The type of polarization to select.
     
     Returns:
-        float: the mean polarization value, for the specified date and polygon.
+        polarizations_means (dictionary): a dictionary containing for each polarization the mean value, for the specified date and polygon.
     '''
     # Filter image collection to get the image for the date
     image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
 
     # Calculate the mean value over the area for the specified polarization type
-    return image.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()[type]
+    polarizations_list = ['VV', 'VH']
+    polarizations_means = {}
+    for polarization in polarizations_list:
+        polarizations_means[polarization] = image.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()[polarization]
+    return polarizations_means
 
 
-def calculate_radar_vegetation_index(image, date, polygon):
+def calculate_radar_vegetation_index(polarizations_means):
     '''
-    Calculate the Radar Vegetation Index (RVI) for a specific date and polygon in a
-    Sentinel-1 image collection.
+    Calculate the Radar Vegetation Index (RVI) for a specific date and polygon in a Sentinel-1 image collection.
     
     Subhadip Dey: 'Vegetation indices are extremely helpful in understanding the agricultural crop conditions and
     their mapping. In optical remote sensing, Normalized Difference Vegetation Index (NDVI) is one
@@ -48,28 +50,16 @@ def calculate_radar_vegetation_index(image, date, polygon):
     Formula source: https://github.com/sentinel-hub/custom-scripts/blob/master/sentinel-1/radar_vegetation_index_code_dual_polarimetric/script.js
     
     Args:
-        image (ee.ImageCollection): The Sentinel-1 image collection filtered by date and bounds.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        polarizations_means (dictionary): a dictionary containing for each polarization the mean value, for a specified date and polygon.
     
     Returns:
         float: the mean RVI value, for the specified date and polygon.
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
-    # Calculate backscatter values for each polarization
-    vv = image.select('VV')
-    vh = image.select('VH')
-
-    # Calculate RVI
-    rvi = (vh.multiply(4.0)).divide(vv.add(vh)).rename('RVI')
-
-    # Calculate the mean RVI for the field polygon
-    return rvi.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['RVI']
+    # Returns RVI
+    return (polarizations_means['VH'] * 4.0) / (polarizations_means['VV'] + polarizations_means['VH'])
 
 
-def calculate_simple_index(image, date, polygon, type=''):
+def calculate_simple_index(polarizations_means, type=''):
     '''
     Calculate a simple index (using VH and VV) for a specific date and polygon in a Sentinel-1 image collection.
 
@@ -91,36 +81,24 @@ def calculate_simple_index(image, date, polygon, type=''):
     Formulae source: https://www.researchgate.net/publication/340548633_Combining_Radar_and_Optical_Imagery_to_Map_Oil_Palm_Plantations_in_Sumatra_Indonesia_Using_the_Google_Earth_Engine
 
     Args:
-        image (ee.ImageCollection): The Sentinel-1 image collection filtered by date and bounds.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
+        polarizations_means (dictionary): a dictionary containing for each polarization the mean value, for a specified date and polygon.
         type (str): The type of simple operation to get ('AVE', 'DIF', 'RAT1', 'RAT2').
 
     Returns:
         float: the mean operation value for the specified date and polygon (using VH and VV polarizations).
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
-    # Calculate values for each polarization
-    vh = image.select('VH')
-    vv = image.select('VV')
-
-    # Calculate the SIMPLE OPERATION
+    # Return the SIMPLE OPERATION
     if (type == 'AVE'):
-        op = vv.add(vh).multiply(1/2).rename('AVE')
+        return (polarizations_means['VV'] + polarizations_means['VH']) / 2
     elif (type == 'DIF'):
-        op = vv.subtract(vh).rename('DIF')
+        return (polarizations_means['VV'] - polarizations_means['VH'])
     elif (type == 'RAT1'):
-        op = vv.divide(vh).rename('RAT1')
+        return (polarizations_means['VV'] / polarizations_means['VH'])
     elif (type == 'RAT2'):
-        op = vh.divide(vv).rename('RAT2')
-
-    # Calculate the mean defined operation for the field polygon
-    return op.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()[type]
+        return (polarizations_means['VH'] / polarizations_means['VV'])
 
 
-def calculate_normalized_difference_index(image, date, polygon):
+def calculate_normalized_difference_index(polarizations_means):
     '''
     Calculate the Normalized Difference Index (using VH and VV) for a specific date and polygon in a Sentinel-1 image collection.
 
@@ -136,18 +114,10 @@ def calculate_normalized_difference_index(image, date, polygon):
     Formula source: https://www.researchgate.net/publication/340548633_Combining_Radar_and_Optical_Imagery_to_Map_Oil_Palm_Plantations_in_Sumatra_Indonesia_Using_the_Google_Earth_Engine
 
     Args:
-        image (ee.ImageCollection): The Sentinel-1 image collection filtered by date and bounds.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
+        polarizations_means (dictionary): a dictionary containing for each polarization the mean value, for a specified date and polygon.
 
     Returns:
         float: the mean NDI value for the specified date and polygon.
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-    
     # Calculate NDI
-    ndi = image.normalizedDifference(['VV', 'VH']).rename('NDI')
-
-    # Calculate the mean NDI for the field polygon
-    return ndi.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['NDI']
+    return (polarizations_means['VV'] - polarizations_means['VH']) / (polarizations_means['VV'] + polarizations_means['VH'])

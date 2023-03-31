@@ -1,9 +1,10 @@
 import ee, pandas as pd
+from math import sqrt
 
 
-def get_band(image, date, polygon, id):
+def get_all_bands(image, date, polygon):
     '''
-    Calculate the Band X value for a specific date and polygon in a Sentinel-2 image collection.
+    Calculate all the Sentinel-2 bands mean values for a specific date and polygon in a Sentinel-2 image collection.
     
     Spectral bands refer to specific ranges of electromagnetic radiation (EMR) that are used in remote sensing 
     applications to capture information about the earth's surface. Spectral bands are usually defined by their
@@ -18,19 +19,25 @@ def get_band(image, date, polygon, id):
         image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
         date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
         polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
-        id (int): The id of the BAND to be returned.
     
     Returns:
-        float: the mean Band X value, for the specified date and polygon.
+        bands_means (dictionary): a dictionary containing for each band the mean value, for the specified date and polygon.
     '''
     # Filter image collection to get the image for the date
     image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
+
+    # Mask out clouds and shadows
+    image = image.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
     
-    # Returns the mean band x value
-    return image.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['B' + str(id)]
+    # Returns the list of mean bands values
+    bands_list = ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B9', 'B11', 'B12']
+    bands_means = {}
+    for band in bands_list:
+        bands_means[band] = image.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()[band]
+    return bands_means
 
 
-def calculate_vegetation_index(image, date, polygon, type, id=None):
+def calculate_vegetation_index(bands_means, type, id=None):
     '''
     Calculates the specified VI index for a given image, date, and polygon.
     
@@ -43,105 +50,81 @@ def calculate_vegetation_index(image, date, polygon, type, id=None):
     different VI indices depending on their specific research questions and the available data.
 
     Args:
-        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        bands_means (dictionary): a dictionary containing for each band the mean value, for the specified date and polygon.
         type (str): The type of vegetation index to calculate.
         id (int): The id of the specified type of vegetation index to calculate.
             
     Returns:
         float: the calculated VI value, for the specified date and polygon.
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
-    # Select useful bands
-    nir = image.select('B8')
-    red = image.select('B4')
-
-    # Calculate NDVI
+    # Return NDVI
     if (type == 'ND'):
-        vi = image.normalizedDifference(['B8', 'B4']).rename('NDVI')
+        return (bands_means['B8'] - bands_means['B4']) / (bands_means['B8'] + bands_means['B4'])
     elif (type == 'NSND'):
-        vi = image.normalizedDifference(['B11', 'B7']).rename('NSNDVI')
+        return (bands_means['B11'] - bands_means['B7']) / (bands_means['B11'] + bands_means['B7'])
     elif (type == 'GND'):
-        vi = image.normalizedDifference(['B8', 'B3']).rename('GNDVI')
+        return (bands_means['B8'] - bands_means['B3']) / (bands_means['B8'] + bands_means['B3'])
     elif (type == 'REND'):
         if (id == 1):
-            vi = image.normalizedDifference(['B5', 'B4']).rename('RENDVI1')
+            return (bands_means['B5'] - bands_means['B4']) / (bands_means['B5'] + bands_means['B4'])
         elif (id == 2):
-            vi = image.normalizedDifference(['B6', 'B4']).rename('RENDVI2')
+            return (bands_means['B6'] - bands_means['B4']) / (bands_means['B6'] + bands_means['B4'])
         elif (id == 3):
-            vi = image.normalizedDifference(['B7', 'B4']).rename('RENDVI3')
+            return (bands_means['B7'] - bands_means['B4']) / (bands_means['B7'] + bands_means['B4'])
     elif (type == 'GRND'):
-        b3 = image.select('B3')
-        vi = ((nir.subtract(b3.add(red)))).divide(nir.add(b3.add(red))).rename('GRNDVI')
+        return (bands_means['B8'] - (bands_means['B3'] + bands_means['B4'])) / (bands_means['B8'] + (bands_means['B3'] + bands_means['B4']))
     elif (type == 'GBND'):
-        b2 = image.select('B2')
-        b3 = image.select('B3')
-        vi = ((nir.subtract(b3.add(b2)))).divide(nir.add(b3.add(b2))).rename('GBNDVI')
+        return (bands_means['B8'] - (bands_means['B3'] + bands_means['B2'])) / (bands_means['B8'] + (bands_means['B3'] + bands_means['B2']))
 
-    # Calculate SAVI
+
+    # Return SAVI
     elif (type == 'SA'):
         L = 0.428
-        vi = (nir.subtract(red)).divide((nir.add(red).add(L)).multiply(1 + L)).rename('SAVI')
+        return (bands_means['B8'] - bands_means['B4']) / (bands_means['B8'] + bands_means['B4'] + L) * (1 + L)
     elif (type == 'MSA'):
-        vi = nir.multiply(2.0).add(1.0).subtract(nir.multiply(2.0).add(1.0).pow(2).subtract(nir.subtract(red).multiply(8.0)).sqrt()).divide(2.0).rename('MSAVI')
+        return (2.0 * bands_means['B8'] + 1.0 - sqrt(((2.0 * bands_means['B8'] + 1.0) ** 2.0) - 8.0 * (bands_means['B8'] - bands_means['B4']))) / 2.0
     elif (type == 'OSA'):
-        vi = (nir.subtract(red).multiply(1.0 + 0.16)).divide(nir.add(red).add(0.16)).rename('OSAVI')
+        return (1.0 + 0.16) * (bands_means['B8'] - bands_means['B4']) / (bands_means['B8'] + bands_means['B4'] + 0.16)
     elif (type == 'TSA'):
         X, A, B = 0.114, 0.824, 0.421
-        vi = nir.subtract(ee.Image.constant(B).multiply(red).subtract(A)).multiply(B).divide(red.add(ee.Image.constant(B).multiply(nir.subtract(A))).add(ee.Image.constant(X).multiply(1 + B ** 2.0))).rename('TSAVI')
+        return (B * (bands_means['B8'] - B * bands_means['B4'] - A)) / (bands_means['B4'] + B * (bands_means['B8'] - A) + X * (1.0 + (B ** 2.0)))
     elif (type == 'ATSA'):
-        vi = nir.subtract(ee.Image.constant(1.22).multiply(red).subtract(0.03)).divide(nir.add(red).subtract(ee.Image.constant(1.22).multiply(0.03)).add(ee.Image.constant(0.08).multiply(1.0 + 1.22 ** 2.0))).rename('ATSAVI')
+        return 1.22 * (bands_means['B8'] - 1.22 * bands_means['B4'] - 0.03) / (1.22 * bands_means['B8'] + bands_means['B4'] - 1.22 * 0.03 + 0.08 * (1.0 + (1.22 ** 2.0)))
+
 
     # Other VIs
     elif (type == 'A'):
-        vi = (nir.multiply((ee.Image.constant(1.0).subtract(red))).multiply(nir.subtract(red))).pow(1.0/3.0).rename('AVI')
+        return (bands_means['B8'] * (1 - bands_means['B4'])*(bands_means['B8'] - bands_means['B4'])) ** 1/3
     elif (type == 'AR'):
-        b2 = image.select('B2')
-        b8a = image.select('B8A')
         if (id == 1):
-            vi = (b8a.subtract(red).subtract(0.069).multiply(red.subtract(b2))).divide(b8a.add(red).subtract(0.069).multiply(red.subtract(b2))).rename('ARVI1')
+            return (bands_means['B8A'] - bands_means['B4'] - 0.069 * (bands_means['B4'] - bands_means['B2'])) / (bands_means['B8A'] + bands_means['B4'] - 0.069 * (bands_means['B4'] - bands_means['B2']))
         elif (id == 2):
-            vi = ee.Image.constant(-0.18).add(ee.Image.constant(1.17).multiply(nir.subtract(red).divide(nir.add(red)))).rename('ARVI2')
+            return -0.18 + 1.17 * ((bands_means['B8'] - bands_means['B4']) / (bands_means['B8'] + bands_means['B4']))
     elif (type == 'C'):
-        b3 = image.select('B3')
-        vi = (nir.multiply(red)).divide(b3.pow(2.0)).rename('CVI')
+        return (bands_means['B8'] * bands_means['B4']) / (bands_means['B3'] ** 2.0)
     elif (type == 'CT'):
-        b3 = image.select('B3')
-        vi = (red.subtract(b3).divide(red.add(b3))).add(0.5).divide((red.subtract(b3).divide(red.add(b3))).add(0.5).abs()).multiply(((red.subtract(b3).divide(red.add(b3))).add(0.5)).abs().sqrt()).rename('CTVI')
+        return (((bands_means['B4'] - bands_means['B3']) / (bands_means['B4'] + bands_means['B3'])) + 0.5) / (abs(((bands_means['B4'] - bands_means['B3']) / (bands_means['B4'] + bands_means['B3']))) + 0.5 * sqrt(abs((((bands_means['B4'] - bands_means['B3']) / (bands_means['B4'] + bands_means['B3']))) + 0.5)))
     elif (type == 'D'):
-        vi = nir.subtract(red).rename('DVI')
+        return bands_means['B8'] - bands_means['B4']
     elif (type == 'E'):
         if (id == 1):
-            b2 = image.select('B2')
-            vi = (nir.subtract(red).multiply(2.5)).divide((nir.add(red.multiply(6.0)).subtract(b2.multiply(7.5))).add(1.0)).rename('EVI1')
+            return 2.5 * (bands_means['B8'] - bands_means['B4']) / ((bands_means['B8'] + 6.0 * bands_means['B4'] - 7.5 * bands_means['B2']) + 1.0)
         elif (id == 2):
-            vi = (nir.subtract(red).multiply(2.4)).divide(nir.add(red).add(1.0)).rename('EVI2')
+            return 2.4 * (bands_means['B8'] - bands_means['B4']) / (bands_means['B8'] + bands_means['B4'] + 1.0)
         elif (id == 3):
-            vi = (nir.subtract(red).multiply(2.5)).divide(nir.add(red.multiply(2.4)).add(1.0)).rename('EVI3')
+            return 2.5 * (bands_means['B8'] - bands_means['B4']) / (bands_means['B8'] + 2.4 * bands_means['B4'] + 1.0)
     elif (type == 'MT'):
-        b3 = image.select('B3')
         if (id == 1):
-            vi = (nir.subtract(b3).multiply(1.2).subtract(red.subtract(b3).multiply(2.5))).multiply(1.2).rename('MTVI1')
+            return 1.2 * (1.2 * (bands_means['B8'] - bands_means['B3']) - 2.5 * (bands_means['B4'] - bands_means['B3']))
         elif (id == 2):
-            vi = nir.subtract(b3).multiply(1.2).subtract(red.subtract(b3).multiply(2.5)).multiply(1.5).divide((ee.Image.constant(2.0).multiply(nir).add(1.0)).pow(2.0).subtract(ee.Image.constant(6.0).multiply(nir).subtract(red.sqrt()).multiply(5.0)).subtract(0.5).sqrt()).rename('MTVI2')
+            return 1.5 * (1.2 * (bands_means['B8'] - bands_means['B3']) - 2.5 * (bands_means['B4'] - bands_means['B3'])) / sqrt(((2.0 * bands_means['B8'] + 1.0) ** 2.0) - (6.0 * bands_means['B8'] - 5.0 * sqrt(bands_means['B4'])) - 0.5)
     elif (type == 'R'):
-        vi = nir.divide(red).rename('RVI')
+        return bands_means['B8'] / bands_means['B4'] 
     elif (type == 'WDR'):
-        vi = nir.multiply(0.1).subtract(red).divide(nir.multiply(0.1).add(red)).rename('WDRVI')
+        return (0.1 * bands_means['B8'] - bands_means['B4']) / (0.1 * bands_means['B8'] + bands_means['B4'])
 
 
-    # Mask out clouds and shadows
-    vi = vi.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
-
-    # Calculate the mean xNDVI for the field polygon
-    id = '' if id == None else str(id)
-    return vi.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()[type + 'VI' + id]
-
-
-def calculate_exogenous_organic_matter_index(image, date, polygon, id):
+def calculate_exogenous_organic_matter_index(bands_means, id):
     '''
     Calculates the EOMIx (Exogenous Organic Matter Index) index for a given image, date, and polygon.
 
@@ -151,39 +134,24 @@ def calculate_exogenous_organic_matter_index(image, date, polygon, id):
     For further details read the following paper: https://www.mdpi.com/2072-4292/13/9/1616.
 
     Args:
-        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        bands_means (dictionary): a dictionary containing for each band the mean value, for the specified date and polygon.
         id (int): The id of the EOMI to be calculated (from 1 to 4).
         
     Returns:
         float: the calculated EOMIx value, for the specified date and polygon.
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
     # Calculate EOMI (different with respect to the passed id)
     if (id == 1):
-        eomi = image.normalizedDifference(['B11', 'B8A']).rename('EOMI1')
+        return (bands_means['B11'] - bands_means['B8A']) / (bands_means['B11'] + bands_means['B8A'])
     if (id == 2):
-        eomi = image.normalizedDifference(['B12', 'B4']).rename('EOMI2')
+        return (bands_means['B12'] - bands_means['B4']) / (bands_means['B12'] + bands_means['B4'])
     if (id == 3):
-        b11 = image.select('B11')
-        b8a = image.select('B8A')
-        b12 = image.select('B12')
-        b4 = image.select('B4')
-        eomi = ((b11.subtract(b8a)).add(b12.subtract(b4))).divide(b11.add(b8a).add(b12).add(b4)).rename('EOMI3')
+        return ((bands_means['B11'] - bands_means['B8A']) + (bands_means['B12'] - bands_means['B4'])) / (bands_means['B11'] + bands_means['B8A'] + bands_means['B12'] + bands_means['B4'])
     if (id == 4):
-        eomi = image.normalizedDifference(['B11', 'B4']).rename('EOMI4')
-
-    # Mask out clouds and shadows
-    eomi = eomi.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
-
-    # Calculate the mean EOMI for the field polygon
-    return eomi.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['EOMI' + str(id)]
+        return (bands_means['B11'] - bands_means['B4']) / (bands_means['B11'] + bands_means['B4'])
 
 
-def calculate_normalized_burn_ratio(image, date, polygon, id=None):
+def calculate_normalized_burn_ratio(bands_means, id=None):
     '''
     Calculate the Normalized Burn Ratio (NBR) value for a specific date and polygon in a Sentinel-2 image collection.
     
@@ -197,32 +165,20 @@ def calculate_normalized_burn_ratio(image, date, polygon, id=None):
     The NBR2 is commonly used in wildfire monitoring and management, as well as in post-fire ecological and land use assessments.
 
     Args:
-        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        bands_means (dictionary): a dictionary containing for each band the mean value, for the specified date and polygon.
         id (int): The id of the NBR to be calculated (default is the standard version).
     
     Returns:
-        float: the mean NBR2 value, for the specified date and polygon.
+        float: the mean NBRx value, for the specified date and polygon.
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
     # Calculate NBR
     if (id == None):
-        nbr = image.normalizedDifference(['B8', 'B12']).rename('NBR')
+        return (bands_means['B8'] - bands_means['B12']) / (bands_means['B8'] + bands_means['B12'])
     elif (id == 2):
-        nbr = image.normalizedDifference(['B11', 'B12']).rename('NBR2')
-
-    # Mask out clouds and shadows
-    nbr = nbr.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
-
-    # Calculate the mean NDVI for the field polygon
-    id = '' if id == None else str(id)
-    return nbr.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['NBR' + id]
+        return (bands_means['B11'] - bands_means['B12']) / (bands_means['B11'] + bands_means['B12'])
 
 
-def calculate_chlorophyll_index(image, date, polygon, id):
+def calculate_chlorophyll_index(bands_means, id):
     '''
     Calculates the Chlorophyll Index (CI) for a given image, date, and polygon.
 
@@ -233,33 +189,22 @@ def calculate_chlorophyll_index(image, date, polygon, id):
     of vegetation are important to consider.
 
     Args:
-        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        bands_means (dictionary): a dictionary containing for each band the mean value, for the specified date and polygon.
         id (int): The id of the CI index to be calculated (from 1 to 3).
 
     Returns:
         float: the calculated CI value, for the specified date and polygon.
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
     # Calculate CI (different with respect to the passed id)
     if (id == 1):
-        ci = image.select('B8').divide(image.select('B5')).subtract(1).rename('CI1')
+        return (bands_means['B8'] / bands_means['B5']) - 1
     elif (id == 2):
-        ci = image.select('B8').divide(image.select('B6')).subtract(1).rename('CI2')
+        return (bands_means['B8'] / bands_means['B6']) - 1
     elif (id == 3):
-        ci = image.select('B8').divide(image.select('B7')).subtract(1).rename('CI3')
-
-    # Mask out clouds and shadows
-    ci = ci.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
-
-    # Calculate the mean CI for the field polygon
-    return ci.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['CI' + str(id)]
+        return (bands_means['B8'] / bands_means['B7']) - 1
 
 
-def calculate_green_coverage_index(image, date, polygon):
+def calculate_green_coverage_index(bands_means):
     '''
     Calculate the Green Coverage Index (GCI) for a specific date and polygon in a Sentinel-2 image collection.
     
@@ -267,31 +212,16 @@ def calculate_green_coverage_index(image, date, polygon):
     be used to estimate the fractional green vegetation cover in a given area.
     
     Args:
-        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        bands_means (dictionary): a dictionary containing for each band the mean value, for the specified date and polygon.
     
     Returns:
         float: the mean value of the GCI, for the specified date and polygon.
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
-    # Select useful bands
-    b3 = image.select('B3')
-    b9 = image.select('B9')
-
-    # Calculate the GCI
-    gci = b9.divide(b3).subtract(1).rename('GCI')
-
-    # Mask out clouds and shadows
-    gci = gci.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
-
     # Calculate the mean vegetation index for the field polygon
-    return gci.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['GCI']
+    return (bands_means['B9'] / bands_means['B3']) - 1
 
 
-def calculate_soil_composition_index(image, date, polygon):
+def calculate_soil_composition_index(bands_means):
     '''
     Calculates the Soil Composition Index (SCI) for a specified date and polygon in a Sentinel-2 image collection.
     
@@ -299,31 +229,16 @@ def calculate_soil_composition_index(image, date, polygon):
     mineral content, such as desert environments. It is calculated as (B11 - B8) / (B11 + B8).
     
     Args:
-        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        bands_means (dictionary): a dictionary containing for each band the mean value, for the specified date and polygon.
     
     Returns:
         float: The mean value of the Soil Composition Index (SCI) for the specified date and polygon.
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
-    # Select useful bands
-    b11 = image.select('B11')
-    b8 = image.select('B8')
-
-    # Calculate the Soil Composition Index (SCI)
-    sci = b11.subtract(b8).divide(b11.add(b8)).rename('SCI')
-
-    # Mask out clouds and shadows
-    sci = sci.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
-
     # Calculate the mean SCI for the field polygon
-    return sci.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['SCI']
+    return (bands_means['B11'] - bands_means['B8']) / (bands_means['B11'] + bands_means['B8'])
 
 
-def calculate_normalized_difference_red_edge(image, date, polygon, id):
+def calculate_normalized_difference_red_edge(bands_means, id):
     '''
     Calculates the Normalized Difference Red Edge (NDRE) index for a given image, date, and polygon.
 
@@ -332,33 +247,22 @@ def calculate_normalized_difference_red_edge(image, date, polygon, id):
     stress, and growth.
 
     Args:
-        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        bands_means (dictionary): a dictionary containing for each band the mean value, for the specified date and polygon.
         id (int): The id of the NDRE to be calculated (from 1 to 3).
 
     Returns:
         float: the calculated NDREx value, for the specified date and polygon.
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
     # Calculate NDRE
     if (id == 1):
-        ndre = image.normalizedDifference(['B8', 'B5']).rename('NDRE1')
+        return (bands_means['B8'] - bands_means['B5']) / (bands_means['B8'] + bands_means['B5'])
     elif (id == 2):
-        ndre = image.normalizedDifference(['B8', 'B6']).rename('NDRE2')
+        return (bands_means['B8'] - bands_means['B6']) / (bands_means['B8'] + bands_means['B6'])
     elif (id == 3):
-        ndre = image.normalizedDifference(['B8', 'B7']).rename('NDRE3')
-
-    # Mask out clouds and shadows
-    ndre = ndre.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
-
-    # Calculate the mean NDRE for the field polygon
-    return ndre.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['NDRE' + str(id)]
+        return (bands_means['B8'] - bands_means['B7']) / (bands_means['B8'] + bands_means['B7'])
 
 
-def calculate_modified_chlorophyll_absorption_reflectance_index(image, date, polygon, id=None):
+def calculate_modified_chlorophyll_absorption_reflectance_index(bands_means, id=None):
     '''
     Calculates the Modified Chlorophyll Absorption in Reflectance Index (MCARI, MCARI1, MCARI2) for a given image, date, and polygon.
 
@@ -367,37 +271,22 @@ def calculate_modified_chlorophyll_absorption_reflectance_index(image, date, pol
     weighting factors for the green and red reflectances.
 
     Args:
-        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        bands_means (dictionary): a dictionary containing for each band the mean value, for the specified date and polygon.
         id (int): The id of the MCARI index to be calculated (from 0 to 2 - default None).
 
     Returns:
         float: the calculated MCARI value, for the specified date and polygon.
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
     # Calculate MCARI (different with respect to the passed id)
     if (id == None):
-        mcari = ((image.select('B5').subtract(image.select('B4'))).subtract(image.select('B5').subtract(image.select('B3').multiply(0.2)))).multiply(image.select('B5').divide(image.select('B4'))).rename('MCARI')
+        return ((bands_means['B5'] - bands_means['B4']) - 0.2 * (bands_means['B5'] - bands_means['B3'])) * (bands_means['B5'] / bands_means['B4'])
     elif (id == 1):
-        mcari = ee.Image.constant(1.2).multiply((image.select('B8').subtract(image.select('B4')).multiply(2.5)).subtract(image.select('B8').subtract(image.select('B3')).multiply(1.3))).rename('MCARI1')
+        return  1.2 * (2.5 * (bands_means['B8'] - bands_means['B4']) - 1.3 * (bands_means['B8'] - bands_means['B3']))
     elif (id == 2):
-        b4 = image.select('B4')
-        b8 = image.select('B8')
-        b3 = image.select('B3')
-        mcari = (b8.subtract(b4).multiply(2.5)).subtract(b8.subtract(b3).multiply(1.3)).multiply(1.5).divide(((b8.multiply(2.0)).add(1.0)).pow(2).subtract((b8.multiply(6.0)).subtract((b4.multiply(5.0)).sqrt())).subtract(0.5)).rename('MCARI2')
-
-    # Mask out clouds and shadows
-    mcari = mcari.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
-
-    # Calculate the mean MCARI for the field polygon
-    id = '' if id == None else str(id)
-    return mcari.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['MCARI' + id]
+        return 1.5 * (2.5 * (bands_means['B8'] - bands_means['B4']) - 1.3 * (bands_means['B8'] - bands_means['B3'])) / sqrt(((2.0 * bands_means['B8'] + 1.0) ** 2.0) - (6.0 * bands_means['B8'] - 5.0 * sqrt(bands_means['B4'])) - 0.5)
    
 
-def calculate_chlorophyll_absorption_ratio_index(image, date, polygon, id):
+def calculate_chlorophyll_absorption_ratio_index(bands_means, id):
     '''
     Calculates the Chlorophyll Absorption Ratio Index (CARI) for a given image, date, and polygon.
 
@@ -406,71 +295,36 @@ def calculate_chlorophyll_absorption_ratio_index(image, date, polygon, id):
     as well as the blue (BLUE) and green (GREEN) bands.
 
     Args:
-        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
+        bands_means (dictionary): a dictionary containing for each band the mean value, for the specified date and polygon.
         id (int): The id of the CARI index to be calculated (from 1 to 2).
 
     Returns:
         float: the calculated CARI value, for the specified date and polygon.
     '''
-
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
     # Calculate CARI
     if (id == 1):
-        cari = image.select('B5').divide(image.select('B4')) \
-                .multiply((ee.Image(((image.select('B5').subtract(image.select('B3'))).divide(150.0)).multiply(670.0)).add(image.select('B4')).add((image.select('B3')).subtract((image.select('B5').subtract(image.select('B3'))).divide(150.0)).multiply(550.0))).pow(2).sqrt()) \
-                .divide(((image.select('B5').subtract(image.select('B3'))).divide(150.0).pow(2).add(1)).pow(0.5)) \
-                .rename('CARI1')
+        return (bands_means['B5'] / bands_means['B4']) * (sqrt((((bands_means['B5'] - bands_means['B3']) / 150.0 * 670.0 + bands_means['B4'] + (bands_means['B3'] - ((bands_means['B5'] - bands_means['B3']) / 150.0 * 550.0))) ** 2.0))) / (((((bands_means['B5'] - bands_means['B3']) / (150.0 ** 2.0) + 1.0) ** 0.5)))
     elif (id == 2):
-        cari = ee.Image(((image.select('B5').subtract(image.select('B3'))).divide(150.0)).multiply(image.select('B4')).add(image.select('B4')).add(image.select('B3')).subtract(ee.Image(0.496).multiply(image.select('B3')))).abs() \
-                .divide((ee.Image(0.496).pow(2).add(1)).pow(0.5)) \
-                .multiply(image.select('B5').divide(image.select('B4'))) \
-                .rename('CARI2')
-        
-    # Mask out clouds and shadows
-    cari = cari.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
-
-    # Calculate the mean CARI for the field polygon
-    return cari.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['CARI' + str(id)]
+        return (abs((((bands_means['B5'] - bands_means['B3']) / 150.0) * bands_means['B4'] + bands_means['B4'] + bands_means['B3'] - (0.496 * bands_means['B3']))) / ((((0.496 ** 2.0) + 1.0) ** 0.5) * (bands_means['B5'] / bands_means['B4'])))
 
 
-def calculate_bare_soil_index(image, date, polygon):
+def calculate_bare_soil_index(bands_means):
     '''
     Calculate the Bare Soil Index (BSI) for a specific date and polygon in a Sentinel-2 image collection.
     
     BSI is a vegetation index that can be used to estimate the percentage of bare soil in a given area.
     
     Args:
-        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        bands_means (dictionary): a dictionary containing for each band the mean value, for the specified date and polygon.
     
     Returns:
         float: the mean value of the BSI, for the specified date and polygon.
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
-    # Select useful bands
-    b2 = image.select('B2')
-    b4 = image.select('B4')
-    b8 = image.select('B8')
-    b11 = image.select('B11')
-
-    # Calculate the BSI
-    bsi = ((b11.add(b4)).subtract(b8.add(b2))).divide((b11.add(b4)).add(b8.add(b2))).rename('BSI')
-
-    # Mask out clouds and shadows
-    bsi = bsi.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
-
     # Calculate the mean BSI for the field polygon
-    return bsi.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['BSI']
+    return (bands_means['B11'] + bands_means['B4']) + ((bands_means['B8'] + bands_means['B2']) / (bands_means['B11'] + bands_means['B4'])) + (bands_means['B8'] + bands_means['B2'])
 
 
-def calculate_green_leaf_index(image, date, polygon):
+def calculate_green_leaf_index(bands_means):
     '''
     Calculate the Green Leaf Index (GLI) for a specific date and polygon in a Sentinel-2 image collection.
     
@@ -478,32 +332,16 @@ def calculate_green_leaf_index(image, date, polygon):
     be used to estimate the fractional green vegetation cover in a given area.
     
     Args:
-        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        bands_means (dictionary): a dictionary containing for each band the mean value, for the specified date and polygon.
     
     Returns:
         float: the mean value of the GLI, for the specified date and polygon.
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
-    # Select useful bands
-    b2 = image.select('B2')
-    b3 = image.select('B3')
-    b4 = image.select('B4')
-
-    # Calculate the GLI
-    gli = b3.multiply(2.0).subtract(b4).subtract(b2).divide(b3.multiply(2.0).add(b4).add(b2)).rename('GLI')
-
-    # Mask out clouds and shadows
-    gli = gli.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
-
     # Calculate the mean vegetation index for the field polygon
-    return gli.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['GLI']
+    return (2.0 * bands_means['B3'] - bands_means['B4'] - bands_means['B2']) / (2.0 * bands_means['B3'] + bands_means['B4'] + bands_means['B2'])
 
 
-def calculate_alteration_index(image, date, polygon):
+def calculate_alteration_index(bands_means):
     '''
     Calculate the Alteration index for a specific date and polygon in a Sentinel-2 image collection.
     
@@ -511,31 +349,16 @@ def calculate_alteration_index(image, date, polygon):
     mapping alteration zones around ore deposits.
     
     Args:
-        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        bands_means (dictionary): a dictionary containing for each band the mean value, for the specified date and polygon.
     
     Returns:
         float: the mean value of the Alteration index, for the specified date and polygon.
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
-    # Select useful bands
-    b11 = image.select('B11')
-    b12 = image.select('B12')
-
-    # Calculate the Alteration index
-    alteration = b11.divide(b12).rename('ALTERATION')
-
-    # Mask out clouds and shadows
-    alteration = alteration.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
-
     # Calculate the mean Alteration index for the field polygon
-    return alteration.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['ALTERATION']
+    return bands_means['B11'] / bands_means['B12']
 
 
-def calculate_swir_difference_index(image, date, polygon):
+def calculate_swir_difference_index(bands_means):
     '''
     Calculate the SWIR Difference Index (SDI) for a specific date and polygon in a Sentinel-2 image collection.
     
@@ -543,25 +366,10 @@ def calculate_swir_difference_index(image, date, polygon):
     moisture content, soil moisture, and mineralogical composition.
     
     Args:
-        image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
-        date (pd.Timestamp): The acquisition date in Pandas Timestamp format.
-        polygon (ee.Geometry): The field polygon geometry in Earth Engine format.
+        bands_means (dictionary): a dictionary containing for each band the mean value, for the specified date and polygon.
     
     Returns:
         float: the mean value of the SDI, for the specified date and polygon.
     '''
-    # Filter image collection to get the image for the date
-    image = ee.Image(image.filterDate(date.strftime('%Y-%m-%d'), (date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')).first())
-
-    # Select useful bands
-    b8 = image.select('B8')
-    b12 = image.select('B12')
-
-    # Calculate the SWIR Difference Index (SDI)
-    sdi = b8.subtract(b12).rename('SDI')
-
-    # Mask out clouds and shadows
-    sdi = sdi.updateMask(image.select('QA60').bitwiseAnd(2).neq(2))
-
     # Calculate the mean SDI for the field polygon
-    return sdi.reduceRegion(reducer=ee.Reducer.mean(), geometry=polygon).getInfo()['SDI']
+    return bands_means['B8'] - bands_means['B12']

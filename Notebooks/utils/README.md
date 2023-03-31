@@ -4,9 +4,10 @@
 ![maintained](https://img.shields.io/badge/maintained%3F-YES-green.svg)
 ![stars](https://img.shields.io/github/stars/Amatofrancesco99/master-thesis.svg)
 
-A Python library that allows to extract data from sentinel satellites, exploiting machine parallelism and relying on Google Earth Engine APIs.
-How to install it?
+This library provides an **easy-to-use**, **comprehensive**, and **flexible** way to work with satellite data from the Sentinel-1 and Sentinel-2 satellites. Its key advantages include: a **well-documented** API, **support** for the mainly used satellites, **open-source code**, and **regular updates**. These advantages make it an excellent tool for anyone working with satellite data, since it allows to *generate datasets that can be both easily used for data analysis and efficiently integrated with well-known ML libraries, to deploy models*.
+In addition to the already mentioned advantages, the implemented code also **exploits machine parallelism** (designed to work efficiently with large volumes of data, allowing for faster processing times and improved performances) and **relies on Google Earth Engine (GEE) APIs** (used to access satellites data and perform some tasks such as *cloud masking*, *image compositing*, and *time series selection*).
 
+**How to install it?**
 ```bash
 $ pip install sentinel-satellites
 ```
@@ -17,9 +18,9 @@ This library is composed of lot of functions, the main ones are here described.
 ***
 ## `get_features()` function
 
-It allows to get from a pandas DataFrame composed of crop fields information, another DataFrame that contains calculated indices for each field and acquisition date within the specified date range, using the selected sentinel satellite.
+It allows to get from a pandas DataFrame composed of crop fields information, another DataFrame that contains for each time a satellite (sentinel-1 or sentinel-2) passed on regions of interest, within a given time period, all the mainly used features mean values (optical or radar). Have a look at: [input DataFrame](#input-dataframe), [execution example](#how-to-execute-it) and [generated DataFrame](#output-dataframe).
 
-Furthermore, it works in parallel in order to exploit the entire computational power of the machine on which you are running this function (load balanced the work of each core). <br>Consider that the parameter `fields_threads` is the number of threads to dedicate to parallelization over the fields level, the remaining part instead is used to apply parallelization over dates level. The value of this parameter should be high (with respect to the overall number of threads exploitable - see your computer specifications) if you have a lot of crop fields but a little time-span to consider, whereas if you have fewer fields but a bigger time-span you should decrease this parameter. Finally, if you have lot of fields with lot of dates to process it should may be optimal considering half of the overall number of threads available. <br>A correct choice of this parameter can drastically reduce the features extraction time.
+The `fields_threads` parameter is the number of threads to dedicate to parallelization over the fields level, the remaining part instead is used to apply parallelization over dates level. The value of this parameter should be high (with respect to the overall number of threads exploitable - see your computer specifications) if you have a lot of crop fields but a little time-span to consider, whereas if you have fewer fields but a bigger time-span you should decrease this parameter. Finally, if you have lot of fields with lot of dates to process it should may be optimal considering half of the overall number of threads available. <br>A correct choice of this parameter can drastically reduce the features extraction time.
 
 For usability reasons some filters have been fixed (like the pixel cloudy percentage, and other things). See the [code](https://github.com/Amatofrancesco99/master-thesis/blob/main/Notebooks/utils/sentinel_satellites.py) for a better understanding.
 
@@ -82,5 +83,11 @@ P-VG2 | 2022-12-05 | 0.646324 |	-0.349386 | 0.188256 | 0.010998 | 0.373301 | 0.1
     * Reduced the `CLOUDY_PIXEL_PERCENTAGE` parameter to `25` (for optical features extraction)
     * The output DataFrame is now ordered by the first two columns (`field_name` & `acquisition_date`), in ascending order 
 
-* `version: 0.0.7` (current):
+* `version: 0.0.7`:
     * Fixed `EOMI3` formula
+
+* `version: 0.0.8` (current):
+    * Improved parallelization in `get_features()` function by calculating all the radar and optical features using mean bands/polarizations values (this allowed to drastically reduce the number of queries to Google Earth Engine via APIs)
+    *E.G:* `NDVI mean = (NIR mean - RED mean) / (NIR mean + RED mean)`
+    * Adjusted descriptions and fixed all `optical_features` and `radar_features` functions by working on mean values
+    * Changed filters on Sentinel-1 and Sentinel-2 image collections, by changing also the parameters values (like `CLOUDY_PIXEL_PERCENTAGE` and others)
