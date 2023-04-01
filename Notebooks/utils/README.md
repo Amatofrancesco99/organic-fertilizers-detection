@@ -18,11 +18,14 @@ This library is composed of lot of functions, the main ones are here described.
 ***
 ## `get_features()` function
 
-It allows to get from a pandas DataFrame composed of crop fields information, another DataFrame that contains for each time a satellite (sentinel-1 or sentinel-2) passed on regions of interest, within a given time period, all the mainly used features mean values (optical or radar). Have a look at: [input DataFrame](#input-dataframe), [execution example](#how-to-execute-it) and [generated DataFrame](#output-dataframe).
+It allows to get from a pandas DataFrame composed of crop fields information, another DataFrame that contains for each time a satellite (sentinel-1 or sentinel-2) passed on regions of interest, within a given time period, all the mainly used features mean values (optical or radar).
+Have a look at: [input DataFrame](#input-dataframe), [execution example](#how-to-execute-it) and [generated DataFrame](#output-dataframe).
+
+The `filters_params` parameter is a list containing the values of the Earth Engine filters to be used for extracting Image Collections, with the specified sentinel satellite. For Sentinel-2 the first parameter in the list is the value of the `CLOUDY_PIXEL_PERCENTAGE` filter (`LESS OR EQUAL TO` - values in range `[0, 100]`), whereas for Sentinel-1 the first parameter in the list is the value of the `orbitProperties_pass` filter (`ASCENDING` or `DESCENDING`).
 
 The `fields_threads` parameter is the number of threads to dedicate to parallelization over the fields level, the remaining part instead is used to apply parallelization over dates level. The value of this parameter should be high (with respect to the overall number of threads exploitable - see your computer specifications) if you have a lot of crop fields but a little time-span to consider, whereas if you have fewer fields but a bigger time-span you should decrease this parameter. Finally, if you have lot of fields with lot of dates to process it should may be optimal considering half of the overall number of threads available. <br>A correct choice of this parameter can drastically reduce the features extraction time.
 
-For usability reasons some filters have been fixed (like the pixel cloudy percentage, and other things). See the [code](https://github.com/Amatofrancesco99/master-thesis/blob/main/Notebooks/utils/sentinel_satellites.py) for a better understanding.
+See the [code](https://github.com/Amatofrancesco99/master-thesis/blob/main/Notebooks/utils/sentinel_satellites.py) for a better understanding.
 
 ## Input DataFrame
 The input DataFrame, lets suppose named `fields_df`, should be structured as follows (just columns position matters):
@@ -47,10 +50,10 @@ ee.Authenticate()
 ee.Initialize()
 ```
 
-Then, supposing that you have already loaded the `fields_df` pandas DataFrame, you have just to run the following code. Change the `sentinel` number, in case you want sentinel `1` features extracted for the crop fields specified (within the time period selected).
+Then, supposing that you have already loaded the `fields_df` pandas DataFrame, you have just to run the following code. Change the `sentinel` number, in case you want sentinel `1` features extracted for the crop fields specified (within the time period selected - be careful that the given date format is consistent with [ISO 8601](https://it.wikipedia.org/wiki/ISO_8601) notation). See the above [general description](#get_features-function), instead, to comprehend what `filters_params` and `fields_threads` parameters are useful for.
 
 ```python
-df = sentinel_satellites.get_features(fields_df, "2022-01-01", "2022-12-31", sentinel=2, fields_threads=3)
+df = sentinel_satellites.get_features(fields_df, "2022-01-01", "2022-12-31", sentinel=2, filters_params=['40'], fields_threads=3)
 ```
 
 ## Output DataFrame
@@ -89,5 +92,5 @@ P-VG2 | 2022-12-05 | 0.646324 |	-0.349386 | 0.188256 | 0.010998 | 0.373301 | 0.1
 * `version: 0.0.8` (current):
     * Improved parallelization in `get_features()` function by calculating all the radar and optical features using mean bands/polarizations values (this allowed to drastically reduce the number of queries to Google Earth Engine via APIs)
     *E.G:* `NDVI mean = (NIR mean - RED mean) / (NIR mean + RED mean)`
-    * Adjusted descriptions and fixed all `optical_features` and `radar_features` functions by working on mean values
-    * Changed filters on Sentinel-1 and Sentinel-2 image collections, by changing also the parameters values (like `CLOUDY_PIXEL_PERCENTAGE` and others)
+    * Adjusted descriptions and fixed all `optical_features` and `radar_features` functions, such that now are working directly on mean bands values (relative to a crop field of interest in a single date)
+    * Added EE filters and allowed users to specify the list of parameters values to be used for filters to extract Sentinel Images Collections

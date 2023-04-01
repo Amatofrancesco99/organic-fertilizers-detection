@@ -167,7 +167,7 @@ def parallelize_features_read(s_filtered, date_range, polygon, field_col_name, f
     return acquisitions
 
 
-def process_field(field, start_date, end_date, sentinel, already_occupied_threads):
+def process_field(field, start_date, end_date, sentinel, filters_params, already_occupied_threads):
     '''
     Processes a single field by calculating the mean indices for each time the satellite passed over that field.
 
@@ -176,6 +176,7 @@ def process_field(field, start_date, end_date, sentinel, already_occupied_thread
         start_date (str): The start date of the date range to filter the collection by.
         end_date (str): The end date of the date range to filter the collection by.
         sentinel (int): The type of sentinel satellite to use (1 = radar, 2 = optical).
+        filters_params (list): The list of parameters to be used for filters parameters for extracting Sentinel Images Collections
         already_occupied_threads (int): The number of threads dedicated to parallelization over the field level.
 
     Returns:
@@ -188,17 +189,19 @@ def process_field(field, start_date, end_date, sentinel, already_occupied_thread
     
     if (sentinel == 1):
         # Filter Sentinel 1 collection
-        s_collection = ee.ImageCollection('COPERNICUS/S1_GRD_FLOAT')
+        s_collection = ee.ImageCollection('COPERNICUS/S1_GRD')
         s_filtered = s_collection.filterBounds(polygon).filterDate(str(start_date), str(end_date)) \
                                     .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV')) \
                                     .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VH')) \
-                                    .filter(ee.Filter.eq('instrumentMode', 'IW'))
-        
+                                    .filter(ee.Filter.eq('instrumentMode', 'IW')) \
+                                    .filter(ee.Filter.eq('orbitProperties_pass', filters_params[0])) #\
+                                    #.filter(ee.Filter.eq('relativeOrbitNumber_start', 66)) \
+                                    #.filterMetadata('resolution_meters', 'equals', 10)
     elif (sentinel == 2):
         # Filter Sentinel 2 collection
         s_collection = ee.ImageCollection('COPERNICUS/S2_SR')
         s_filtered = s_collection.filterBounds(polygon).filterDate(str(start_date), str(end_date)) \
-                                .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 40))
+                                .filter(ee.Filter.lte('CLOUDY_PIXEL_PERCENTAGE', int(filters_params[0])))
         
     # Get distinct dates from the Sentinel 1 collection and put into the date_range list
     s_dates = s_filtered.aggregate_array('system:time_start').map(lambda time_start: ee.Date(time_start).format('YYYY-MM-dd'))
@@ -208,11 +211,11 @@ def process_field(field, start_date, end_date, sentinel, already_occupied_thread
     return parallelize_features_read(s_filtered, date_range, polygon, field.index[0], field_name, sentinel, already_occupied_threads)
 
 
-def get_features(fields_df, start_date, end_date, sentinel, fields_threads):
+def get_features(fields_df, start_date, end_date, sentinel, filters_params, fields_threads):
     '''
-    Takes a pandas DataFrame of fields information, a start date, an end date, and a sentinel integer as inputs, 
-    and returns a pandas DataFrame of calculated indices for each field and acquisition date within the specified
-    date range, using the selected sentinel satellite.
+    It allows to get from a pandas DataFrame composed of crop fields information, another DataFrame that contains 
+    for each time a satellite (sentinel-1 or sentinel-2) passed on regions of interest, within a given time period, 
+    all the mainly used features mean values (optical or radar).
     Furthermore, it works in parallel in order to exploit the entire computational power of the machine on which you are
     running this function (load balanced the work of each core) - otherwise to compute the same task would have taken too much
     time. Each core works on a different field (obviously if you have only one field this part is not parallelized).
@@ -223,6 +226,11 @@ def get_features(fields_df, start_date, end_date, sentinel, fields_threads):
         start_date (str): The start date of the date range to filter the collection by.
         end_date (str): The end date of the date range to filter the collection by.
         sentinel (int): The type of sentinel satellite to use (1 = radar, 2 = optical).
+        filters_params (list): The list of parameters values to be used for filters to extracting Sentinel Images Collections
+            * For Sentinel-1:
+                * first parameter in the list rapresents the value of the 'orbitProperties_pass' filter ('ASCENDING' or 'DESCENDING')
+            * For Sentinel-2:
+                * first parameter in the list represents the value of the 'CLOUDY_PIXEL_PERCENTAGE' filter ('LTE' - values in range [0, 100])
         fields_threads (int): The number of threads to dedicate to parallelization over the fields level, the remaining part 
             instead is used to apply parallelization over dates level. The value of this parameter should be high (with respect 
             to the overall number of threads exploitable - see your computer specifications) if you have a lot of crop fields but
@@ -245,10 +253,10 @@ def get_features(fields_df, start_date, end_date, sentinel, fields_threads):
         futures = []
         # When just one field is inside the fields_df DataFrame
         if (len(fields_df) == 2):
-            futures.append(executor.submit(process_field, fields_df, start_date, end_date, sentinel, fields_threads))
+            futures.append(executor.submit(process_field, fields_df, start_date, end_date, sentinel, filters_params, fields_threads))
         else:
             for index, field in fields_df.iterrows():
-                futures.append(executor.submit(process_field, field, start_date, end_date, sentinel, fields_threads))
+                futures.append(executor.submit(process_field, field, start_date, end_date, sentinel, filters_params, fields_threads))
                 
         # Wait for all futures to complete and gather results
         for future in concurrent.futures.as_completed(futures):
