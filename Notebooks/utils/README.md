@@ -4,7 +4,8 @@
 ![maintained](https://img.shields.io/badge/maintained%3F-YES-green.svg)
 ![stars](https://img.shields.io/github/stars/Amatofrancesco99/master-thesis.svg)
 
-This library provides an **easy-to-use**, **comprehensive**, and **flexible** way to work with satellite data from the Sentinel-1 and Sentinel-2 satellites. Its key advantages include: a **well-documented** API, **support** for the mainly used satellites, **open-source code**, and **regular updates**. These advantages make it an excellent tool for anyone working with satellite data, since it allows to *generate datasets that can be both easily used for data analysis and efficiently integrated with well-known ML libraries, to deploy models*.
+This library provides an **easy-to-use**, **comprehensive**, and **flexible** way to work with satellite data from the Sentinel-1 and Sentinel-2 satellites. Its key advantages include: a **well-documented** API, **support** for the mainly used satellites, **open-source code**, and **regular updates**.<br>
+These advantages make it an excellent tool for anyone working with satellite data, since it allows to *generate datasets that can be both easily used for data analysis and efficiently integrated with well-known ML libraries, to deploy models*.<br>
 In addition to the already mentioned advantages, the implemented code also **exploits machine parallelism** (designed to work efficiently with large volumes of data, allowing for faster processing times and improved performances) and **relies on Google Earth Engine (GEE) APIs** (used to access satellites data and perform some tasks such as *cloud masking*, *image compositing*, and *time series selection*).
 
 **How to install it?**
@@ -89,7 +90,7 @@ P-VG2 | 2022-12-05 | 0.646324 |	-0.349386 | 0.188256 | 0.010998 | 0.373301 | 0.1
 * `version: 0.0.7`:
     * Fixed `EOMI3` formula
 
-* `version: 0.0.8` (current):
+* `version: 0.0.9` (current):
     * Improved parallelization in `get_features()` function by calculating all the radar and optical features using mean bands/polarizations values (this allowed to drastically reduce the number of queries to Google Earth Engine via APIs)
     *E.G:* `NDVI mean = (NIR mean - RED mean) / (NIR mean + RED mean)`
     * Adjusted descriptions and fixed all `optical_features` and `radar_features` functions, such that now are working directly on mean bands values (relative to a crop field of interest in a single date)
