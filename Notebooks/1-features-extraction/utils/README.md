@@ -1,6 +1,6 @@
 # sentinel-satellites 🌍
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://github.com/Amatofrancesco99/master-thesis/blob/main/Notebooks/1-features-extraction/utils/LICENSE)
 ![maintained](https://img.shields.io/badge/maintained%3F-YES-green.svg)
 ![stars](https://img.shields.io/github/stars/Amatofrancesco99/master-thesis.svg)
 
@@ -27,7 +27,7 @@ The `filters_params` parameter is a list containing the values of the Earth Engi
 
 The `fields_threads` parameter is the number of threads to dedicate to parallelization over the fields level, the remaining part instead is used to apply parallelization over dates level. The value of this parameter should be high (with respect to the overall number of threads exploitable - see your computer specifications) if you have a lot of crop fields but a little time-span to consider, whereas if you have fewer fields but a bigger time-span you should decrease this parameter. Finally, if you have lot of fields with lot of dates to process it should may be optimal considering half of the overall number of threads available. <br>A correct choice of this parameter can drastically reduce the features extraction time.
 
-See the [code](https://github.com/Amatofrancesco99/master-thesis/blob/main/Notebooks/utils/sentinel_satellites.py) for a better understanding.
+See the [code](https://github.com/Amatofrancesco99/master-thesis/blob/main/Notebooks/1-features-extraction/utils/sentinel_satellites.py) for a better understanding.
 
 ## Input DataFrame
 The input DataFrame, lets suppose named `fields_df`, should be structured as follows (just columns position matters):
@@ -91,8 +91,11 @@ P-VG2 | 2022-12-05 | 0.646324 |	-0.349386 | 0.188256 | 0.010998 | 0.373301 | 0.1
 * `version: 0.0.7`:
     * Fixed `EOMI3` formula
 
-* `version: 0.0.9` (current):
+* `versions: 0.0.8` & `0.0.9`:
     * Improved parallelization in `get_features()` function by calculating all the radar and optical features using mean bands/polarizations values (this allowed to drastically reduce the number of queries to Google Earth Engine via APIs)
     *E.G:* `NDVI mean = (NIR mean - RED mean) / (NIR mean + RED mean)`
     * Adjusted descriptions and fixed all `optical_features` and `radar_features` functions, such that now are working directly on mean bands values (relative to a crop field of interest in a single date)
     * Added EE filters and allowed users to specify the list of parameters values to be used for filters to extract Sentinel Images Collections
+
+* `version: 0.0.10` (current):
+    * Improved descriptions and fixed broken links due to code refactoring

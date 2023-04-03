@@ -142,5 +142,5 @@ Notes/notes.pdf
 Recordings/*
 
 # Files for PyPI sentinel-satellite library
-Notebooks/utils/pyproject.toml
-Notebooks/utils/setup.cfg
+Notebooks/1-features-extraction/utils/pyproject.toml
+Notebooks/1-features-extraction/utils/setup.cfg
