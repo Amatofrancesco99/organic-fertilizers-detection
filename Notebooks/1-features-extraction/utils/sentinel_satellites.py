@@ -263,7 +263,7 @@ def get_features(fields_df, start_date, end_date, sentinel, filters_params, fiel
             df_list.extend(future.result())
 
     # Create a dataframe from the list of rows
-    df = pd.DataFrame(df_list)
+    df = pd.DataFrame(df_list).reset_index(drop=True)
     
     # Sorting by crop field name and acquisition date and return the sorted DataFrame
     return df.sort_values([str(df.columns[0]), str(df.columns[1])], ascending=[True, True])

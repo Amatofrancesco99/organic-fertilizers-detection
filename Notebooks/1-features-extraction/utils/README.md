@@ -88,14 +88,13 @@ P-VG2 | 2022-12-05 | 0.646324 |	-0.349386 | 0.188256 | 0.010998 | 0.373301 | 0.1
     * Reduced the `CLOUDY_PIXEL_PERCENTAGE` parameter to `25` (for optical features extraction)
     * The output DataFrame is now ordered by the first two columns (`field_name` & `acquisition_date`), in ascending order 
 
-* `version: 0.0.7`:
+* `version: 0.0.7`, `0.0.8` & `0.0.9`:
     * Fixed `EOMI3` formula
-
-* `versions: 0.0.8` & `0.0.9`:
     * Improved parallelization in `get_features()` function by calculating all the radar and optical features using mean bands/polarizations values (this allowed to drastically reduce the number of queries to Google Earth Engine via APIs)
     *E.G:* `NDVI mean = (NIR mean - RED mean) / (NIR mean + RED mean)`
     * Adjusted descriptions and fixed all `optical_features` and `radar_features` functions, such that now are working directly on mean bands values (relative to a crop field of interest in a single date)
     * Added EE filters and allowed users to specify the list of parameters values to be used for filters to extract Sentinel Images Collections
 
-* `version: 0.0.10` (current):
+* `version: 0.0.10`, `0.0.11` & `0.0.12` (current):
     * Improved descriptions and fixed broken links due to code refactoring
+    * Added `.reset_index(drop=True)` method when return the features extracted DataFrame
