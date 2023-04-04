@@ -41,9 +41,10 @@ def get_features_importance(s_df, sentinel, hide_plain=False):
         # Calculate the mean and standard deviation for the rows where manure have not been applied
         mean_df = s_df[~manure_indices].select_dtypes(include=['number']).mean()
         
-        # Calculate the importance of features by means of the difference the mean value when manure has been applied and when not
-        # divided by the standard deviation when manure have not been applied
-        importance_df = pd.DataFrame(s_df[manure_indices].select_dtypes(include=['number']).sub(mean_df).div(mean_df).iloc[0].rename('importance'))
+        # Calculate the importance of features by means of the difference of the mean value when manure has been applied 
+        # (considered just two dates after the fertilization date - the date immediately after manure can be a noisy estimate, so
+        # it is better averaging on two dates...) and when not, divided by the latter one
+        importance_df = pd.DataFrame(s_df[manure_indices].select_dtypes(include=['number']).sub(mean_df).div(mean_df).iloc[0:2].mean().rename('importance'))
         
         # Calculate the absolute features importance and sort by descending order
         abs_importance_df = importance_df.abs().sort_values(by=importance_df.columns[0], ascending=False).reset_index().rename(columns={"index": "feature"})
