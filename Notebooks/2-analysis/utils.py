@@ -20,13 +20,14 @@ def get_MinMaxScaled_df(s_df, feature_range):
 
     numeric_cols = s_df.select_dtypes(include=['float64', 'int64']).columns.tolist()
 
-    # Iterate over the numeric columns and normalize only the ones that have values outside of the [-1, 1] range
+    # Iterate over the numeric columns and scale only the ones that have values outside of the 
+    # feature_range specified range
     s_df_norm = s_df.copy()
     for col in numeric_cols:
-        if (s_df_norm[col].min() < -1) or (s_df_norm[col].max() > 1):
+        if (s_df_norm[col].min() < feature_range[0]) or (s_df_norm[col].max() > feature_range[1]):
             s_df_norm[col] = scaler.fit_transform(s_df_norm[[col]])
     
-    # Return the normalized DataFrame
+    # Return the scaled DataFrame
     return s_df_norm
 
 
