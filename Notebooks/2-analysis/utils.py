@@ -1,4 +1,33 @@
 import pandas as pd, scipy.stats, matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
+
+
+def get_MinMaxScaled_df(s_df, feature_range):
+    '''
+    This function applies MinMax scaling to the pandas DataFrame passed as parameter, to all the numeric columns 
+    having values not already ranging between the specified feature range.
+
+    Parameters:
+        s_df (pandas DataFrame): A data object containing sentinel-1 or sentinel-2 features extracted.
+        feature_range (tuple): A tuple containing the values that you want your scaled features will range (e.g. (-1, 1)).
+        
+    Returns:
+        pandas DataFrame: A DataFrame containing the columns of the original DataFrame scaled (the numerical ones, not already
+        ranging within the specified feature range).
+    '''
+    # Define the scaler Object
+    scaler = MinMaxScaler(feature_range = feature_range)
+
+    numeric_cols = s_df.select_dtypes(include=['float64', 'int64']).columns.tolist()
+
+    # Iterate over the numeric columns and normalize only the ones that have values outside of the [-1, 1] range
+    s_df_norm = s_df.copy()
+    for col in numeric_cols:
+        if (s_df_norm[col].min() < -1) or (s_df_norm[col].max() > 1):
+            s_df_norm[col] = scaler.fit_transform(s_df_norm[[col]])
+    
+    # Return the normalized DataFrame
+    return s_df_norm
 
 
 def get_features_importance(s_df, sentinel, hide_plain=False):
@@ -13,10 +42,10 @@ def get_features_importance(s_df, sentinel, hide_plain=False):
     0, considering different manure dates and many crop fields. 
 
     Parameters:
-        s_df (pandas DataFrame): A data object containing sentinel-1 or sentinel-2 features extracted
+        s_df (pandas DataFrame): A data object containing sentinel-1 or sentinel-2 features extracted.
         sentinel (int): The sentinel number (1 for Sentinel-1 or 2 for Sentinel-2).
         hide_plain (boolean): Whether to consider the plain features (for Sentinel-1 are polarizations, while for
-        Sentinel-2 are bands) 
+        Sentinel-2 are bands).
         
     Returns:
         pandas DataFrame: A DataFrame containing the importance of each feature (for each feature we have its own
@@ -38,7 +67,7 @@ def get_features_importance(s_df, sentinel, hide_plain=False):
         # https://www.mdpi.com/2072-4292/13/9/1616
         manure_indices = (s_df['crop_field_name'] == field_name) & ((pd.to_datetime(s_df['s' + str(sentinel) + '_acquisition_date'], format='%Y-%m-%d') - manure_dates[0]).dt.days <= 30) & ((pd.to_datetime(s_df['s' + str(sentinel) + '_acquisition_date'], format='%Y-%m-%d') - manure_dates[0]).dt.days >= 0)
         
-        # Calculate the mean and standard deviation for the rows where manure have not been applied
+        # Calculate the mean for the rows where manure have not been applied
         mean_df = s_df[~manure_indices].select_dtypes(include=['number']).mean()
         
         # Calculate the importance of features by means of the difference of the mean value when manure has been applied 
