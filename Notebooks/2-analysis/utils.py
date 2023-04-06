@@ -1,4 +1,4 @@
-import pandas as pd, scipy.stats, matplotlib.pyplot as plt
+import pandas as pd, scipy.stats, matplotlib.pyplot as plt, numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
 
@@ -18,7 +18,7 @@ def get_MinMaxScaled_df(s_df, feature_range):
     # Define the scaler Object
     scaler = MinMaxScaler(feature_range = feature_range)
 
-    numeric_cols = s_df.select_dtypes(include=['float64', 'int64']).columns.tolist()
+    numeric_cols = s_df.select_dtypes(include=np.number).columns.tolist()
 
     # Iterate over the numeric columns and scale only the ones that have values outside of the 
     # feature_range specified range
