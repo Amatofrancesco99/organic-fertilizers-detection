@@ -1,22 +1,30 @@
 import pandas as pd, scipy.stats, matplotlib.pyplot as plt, numpy as np
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, RobustScaler
 
 
-def get_MinMaxScaled_df(s_df, feature_range):
+def get_normalized_df(s_df, method, feature_range=None):
     '''
-    This function applies MinMax scaling to the pandas DataFrame passed as parameter, to all the numeric columns 
-    having values not already ranging between the specified feature range.
+    This function applies a selected normalization method to the pandas DataFrame passed as parameter.
 
     Parameters:
-        s_df (pandas DataFrame): A data object containing sentinel-1 or sentinel-2 features extracted.
-        feature_range (tuple): A tuple containing the values that you want your scaled features will range (e.g. (-1, 1)).
-        
+        s_df (pandas DataFrame): A data object containing Sentinel-1 or Sentinel-2 features extracted.
+        method (str): The method to be used in order to normalize the DataFrame (allowed: "min-max", "mean-var", 
+        "max-abs", "robust").
+        feature_range (tuple): A tuple containing the values that you want your scaled features will range (e.g. (-1, 1)). It 
+        can be fixed only for "min-max" scaling.
+
     Returns:
-        pandas DataFrame: A DataFrame containing the columns of the original DataFrame scaled (the numerical ones, not already
-        ranging within the specified feature range).
+        pandas DataFrame: A DataFrame containing the columns of the original DataFrame scaled.
     '''
     # Define the scaler Object
-    scaler = MinMaxScaler(feature_range = feature_range)
+    if method == "min-max":
+        scaler = MinMaxScaler(feature_range=feature_range)
+    elif method == "mean-var":
+        scaler = StandardScaler()
+    elif method == "max-abs":
+        scaler = MaxAbsScaler()
+    elif method == "robust":
+        scaler = RobustScaler()
 
     numeric_cols = s_df.select_dtypes(include=np.number).columns.tolist()
 
@@ -24,8 +32,7 @@ def get_MinMaxScaled_df(s_df, feature_range):
     # feature_range specified range
     s_df_norm = s_df.copy()
     for col in numeric_cols:
-        if (s_df_norm[col].min() < feature_range[0]) or (s_df_norm[col].max() > feature_range[1]):
-            s_df_norm[col] = scaler.fit_transform(s_df_norm[[col]])
+        s_df_norm[col] = scaler.fit_transform(s_df_norm[[col]])
     
     # Return the scaled DataFrame
     return s_df_norm
@@ -37,8 +44,8 @@ def get_features_importance(s_df, sentinel, hide_plain=False):
     different crop fields and different manure dates) have been changed with respect to the yearly trend, when manure has not been
     applied, the higher the importance.
     In so doing we can understand which are the features that have been mostly impacted by fertilization.
-    A metric to perform the feature importance has been defined in terms of absolute normalized variation, that is to say:
-        feature_importance = abs((feature_value[manured].mean() - feature_value[~manured].mean()) / feature_value[~manured].mean())
+    A metric to perform the feature importance has been defined in terms of:
+        feature_importance = abs(feature_val[imm_after_manure] - feature_val[imm_before_manure]) / max(abs(daily_diff[~manure]))
     Furthermore a T-Test has been applied in order to understand how many times occurred that the feature importance was higher then
     0, considering different manure dates and many crop fields. 
 
@@ -60,36 +67,41 @@ def get_features_importance(s_df, sentinel, hide_plain=False):
 
     # Loop through each field and perform the operations
     for field_name in field_names:
-        # Convert manure_dates column to a list of datetimes
-        manure_dates = pd.to_datetime(s_df['manure_dates'].apply(lambda x: x.replace("['", "").replace("']", "")), format='%Y-%m-%d')
-        
-        # Get the indices of the rows that are between 0 and 30 days after the manure date (why 30 days? Because the effects
+        # Get the fraction of the original dataframe relative to the single crop field
+        df = s_df[s_df['crop_field_name'] == field_name]
+        # Get the manure date of each crop field (we have just one for each crop field) - Modifications needed if more then one
+        # manure dates are present (but this is not the case)
+        manure_date = pd.to_datetime(df['manure_dates'].apply(lambda x: x.replace("['", "").replace("']", "")), format='%Y-%m-%d').unique()[0]
+
+        # Get the indices of the rows that are between 0 and 15 days after the manure date (why 15 days? Because the effects
         # of fertilization on crop field can be seen not just the day immediately after, but also for few weeks after)
         # https://www.mdpi.com/2072-4292/13/9/1616
-        manure_indices = (s_df['crop_field_name'] == field_name) & ((pd.to_datetime(s_df['s' + str(sentinel) + '_acquisition_date'], format='%Y-%m-%d') - manure_dates[0]).dt.days <= 30) & ((pd.to_datetime(s_df['s' + str(sentinel) + '_acquisition_date'], format='%Y-%m-%d') - manure_dates[0]).dt.days >= 0)
-        
-        # Calculate the mean for the rows where manure have not been applied
-        mean_df = s_df[~manure_indices].select_dtypes(include=['number']).mean()
-        
-        # Calculate the importance of features by means of the difference of the mean value when manure has been applied 
-        # (considered just two dates after the fertilization date - the date immediately after manure can be a noisy estimate, so
-        # it is better averaging on two dates...) and when not, divided by the latter one
-        importance_df = pd.DataFrame(s_df[manure_indices].select_dtypes(include=['number']).sub(mean_df).div(mean_df).iloc[0:2].mean().rename('importance'))
-        
-        # Calculate the absolute features importance and sort by descending order
-        abs_importance_df = importance_df.abs().sort_values(by=importance_df.columns[0], ascending=False).reset_index().rename(columns={"index": "feature"})
+        manure_indices =  ((pd.to_datetime(df['s' + str(sentinel) + '_acquisition_date'], format='%Y-%m-%d') - manure_date).dt.days >= 0) & ((pd.to_datetime(df['s' + str(sentinel) + '_acquisition_date'], format='%Y-%m-%d') - manure_date).dt.days <= 15)
+        # Get the indices of the rows before manure date 
+        before_manure_indices = (pd.to_datetime(df['s' + str(sentinel) + '_acquisition_date'], format='%Y-%m-%d') < manure_date)
 
-        # Remove plain features (if explicitly asked)
+        # It calculates the means of the features considering 2 acquisitions before manure date
+        mean_prev = df[before_manure_indices].select_dtypes(include=['number']).tail(2).mean()
+        # It calculates the differences of features between two consequent acquisitions, for all the times manure has not been applied
+        max_daily_diff = df[~manure_indices].select_dtypes(include=['number']).diff().dropna().abs().max()
+
+        # Calculate the importance of features (note that this formula is quite complex)
+        # feature_importance = abs(feature_val[imm_after_manure] - feature_val[imm_before_manure]) / max(abs(daily_diff[~manure]))
+        importance_df = pd.DataFrame((df[manure_indices].select_dtypes(include=['number']).iloc[0].sub(mean_prev)).abs().div(max_daily_diff).rename('importance'))   
+        # Sort the importances
+        importance_df = importance_df.sort_values(by=importance_df.columns[0], ascending=False).reset_index().rename(columns={"index": "feature"})
+
+        # Hide plain features (if explicitly asked)
         if (hide_plain):
             if (sentinel == 1):
                 # Remove the plain polarizations values since we do not want to consider those
-                abs_importance_df = abs_importance_df.drop(abs_importance_df[abs_importance_df['feature'].isin(['VV', 'VH'])].index)
+                importance_df = importance_df.drop(importance_df[importance_df['feature'].isin(['VV', 'VH'])].index)
             if (sentinel == 2):
                 # Remove the plain bands values since we do not want to consider those
-                abs_importance_df = abs_importance_df.drop(abs_importance_df[abs_importance_df['feature'].isin(['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B9', 'B11', 'B12'])].index)
+                importance_df = importance_df.drop(importance_df[importance_df['feature'].isin(['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B9', 'B11', 'B12'])].index)
         
         # Add the results to the list
-        results_list.append(abs_importance_df)
+        results_list.append(importance_df)
 
     # Concatenate the results for all fields into a single dataframe and rank by descending order by feature importance
     results_df = pd.concat(results_list).groupby('feature').mean().sort_values(by='importance', ascending=False)
