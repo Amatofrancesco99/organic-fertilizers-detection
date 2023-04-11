@@ -45,7 +45,7 @@ def get_features_importance(s_df, sentinel, hide_plain=False):
     applied, the higher the importance.
     In so doing we can understand which are the features that have been mostly impacted by fertilization.
     A metric to perform the feature importance has been defined in terms of:
-        feature_importance = abs(feature_val[imm_after_manure] - feature_val[imm_before_manure]) / max(abs(daily_diff[~manure]))
+        feature_importance = abs(feature_val[imm_after_manure] - feature_val[imm_before_manure]) / max(abs(daily_feature_diff[~manure]))
     Furthermore a T-Test has been applied in order to understand how many times occurred that the feature importance was higher then
     0, considering different manure dates and many crop fields. 
 
@@ -86,7 +86,7 @@ def get_features_importance(s_df, sentinel, hide_plain=False):
         max_daily_diff = df[~manure_indices].select_dtypes(include=['number']).diff().dropna().abs().max()
 
         # Calculate the importance of features (note that this formula is quite complex)
-        # feature_importance = abs(feature_val[imm_after_manure] - feature_val[imm_before_manure]) / max(abs(daily_diff[~manure]))
+        # feature_importance = abs(feature_val[imm_after_manure] - feature_val[imm_before_manure]) / max(abs(daily_feature_diff[~manure]))
         importance_df = pd.DataFrame((df[manure_indices].select_dtypes(include=['number']).iloc[0].sub(mean_prev)).abs().div(max_daily_diff).rename('importance'))   
         # Sort the importances
         importance_df = importance_df.sort_values(by=importance_df.columns[0], ascending=False).reset_index().rename(columns={"index": "feature"})
