@@ -2,7 +2,7 @@ import pandas as pd, scipy.stats, matplotlib.pyplot as plt, numpy as np
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, RobustScaler
 
 
-def get_normalized_df(s_df, method, feature_range=None):
+def get_normalized_df(s_df, method, feature_range=(-1, 1)):
     '''
     This function applies a selected normalization method to the pandas DataFrame passed as parameter.
 
@@ -10,8 +10,8 @@ def get_normalized_df(s_df, method, feature_range=None):
         s_df (pandas DataFrame): A data object containing Sentinel-1 or Sentinel-2 features extracted.
         method (str): The method to be used in order to normalize the DataFrame (allowed: "min-max", "mean-var", 
         "max-abs", "robust").
-        feature_range (tuple): A tuple containing the values that you want your scaled features will range (e.g. (-1, 1)). It 
-        can be fixed only for "min-max" scaling.
+        feature_range (tuple): A tuple containing the values that you want your scaled features will range (default: (-1, 1)).
+        It works only with "min-max" scaling method.
 
     Returns:
         pandas DataFrame: A DataFrame containing the columns of the original DataFrame scaled.
