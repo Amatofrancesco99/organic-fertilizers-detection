@@ -143,3 +143,18 @@ A partire dalla data di concimazione, andiamo a vedere quali sono gli indici che
 
 ***
 ***
+## <green><b>11 Apr 2023 - 4 incontro</b></green>
+1. L'obiettivo primario della tesi non è ottenere qualcosa che funzioni al 100%, ma quello di fare una ricerca che funzioni bene nel nostro contesto (Spagnolo), e poi validarlo su quello Italiano (se funziona anche in questi termini possiamo reputarci fortunati). Va bene comunque qualora dovessero rimanere aspetti da estendere ulteriormente.
+
+1. Indicare le unità di misura, quando si scriverà la tesi, per le bande e le polarizzazioni (dB). 
+
+1. Proviamo anche ad aggiungere un analisi qualitativa delle correlazioni tra gli indici usando dati di campi NON locati in Spagna (*DUSAF*, vedere se le correlazioni valgono comunque anche in un altro contesto differente). Se per esempio il nostro modello non funziona in un contesto diverso potrebbe essere dovuto al fatto che le matrici di correlazioni sono differenti. 
+
+1. Migliorare la formula per l'importanza delle features. <br>
+L'obiettivo è quello di misurare la variazione tra l'incremento (o decremento) dell'indice quando il campo è concimato, rispetto agli incrementi (decrementi) che avvengono quando il campo NON è stato concimato. <br>
+Se definiamo l'importanza alternativamente in questo modo, abbiamo fatto esattamente quanto descritto sopra (invariante se dataset normalizzato o no):
+    1. feat_imp = abs(feat_val[imm_after_manure] - feat_val[imm_before_manure]) / max(abs(daily_feat_diff[~manure]))
+<br><br>
+1. Iniziamo a costruire anche un modello semplice per vedere se funzionano le nostre assunzioni.
+
+1. Cambiare i grafici del report che avevo inviato a David (cambiando di conseguenza le features maggiormente impattate dalla concimazione), far vedere magari anche la matrice di correlazione se possibile ed un confronto tra le due (magari in maniera analitica anche e non solo visuale).
