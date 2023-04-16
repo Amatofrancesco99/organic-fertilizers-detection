@@ -1,5 +1,4 @@
 import pandas as pd, numpy as np, time
-from sklearn.utils import resample
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
