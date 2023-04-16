@@ -49,17 +49,18 @@ def get_modified_df(s_df, sentinel):
     return s_df_mod.dropna()
 
 
-def get_sampled_df(s2_df_mod, method, random_state=0):
+def get_balanced_df(s2_df_mod, method, random_state=0):
     """
-    Returns a balanced dataframe where the number of 0's and 1's are equal for each unique crop field.
+    Returns a balanced dataframe where the number of 0's and 1's are equal for each unique crop field (exploiting oversampling
+    or undersampling methods).
 
     Args:
-        s2_df_mod (pd.DataFrame): The original dataframe to balance.
+        s2_df_mod (pandas DataFrame): The original dataframe to balance.
         method (str): The method to be used to sample the dataset ('under' or 'over')
         random_state (int): The random seed to use for sampling (default 0).
 
     Returns:
-        pd.DataFrame: A balanced dataframe where the number of 0's and 1's are equal for each unique crop field.
+        pandas DataFrame: A balanced dataframe where the number of 0's and 1's are equal for each unique crop field.
     """
 
     # Get the unique crop field names
