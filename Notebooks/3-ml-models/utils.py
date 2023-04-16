@@ -1,6 +1,7 @@
 import pandas as pd, numpy as np, time
+from sklearn.utils import resample
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import f1_score, precision_score, recall_score
+from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
 
 def get_modified_df(s_df, sentinel):
@@ -30,9 +31,9 @@ def get_modified_df(s_df, sentinel):
 
     # Add a column y that contains 1 if one of the manure dates is within two consequent s2_acquisition_date for a specific crop field,
     # otherwise 0
-    def check_overlap(df):
-        manure_dates = df['manure_dates'].tolist()
-        s2_dates = df[acq_date_col_name].tolist()
+    def check_overlap(crop_df):
+        manure_dates = crop_df['manure_dates'].tolist()
+        s2_dates = crop_df[acq_date_col_name].tolist()
         results = [np.NAN]
         for j in range(1, len(s2_dates) - 1):
             results.append(0)
@@ -49,17 +50,17 @@ def get_modified_df(s_df, sentinel):
     return s_df_mod.dropna()
 
 
-def get_balanced_df(s2_df_mod, method, random_state):
+def get_sampled_df(s2_df_mod, method, random_state=0):
     """
     Returns a balanced dataframe where the number of 0's and 1's are equal for each unique crop field.
 
     Args:
-    s2_df_mod (pd.DataFrame): The original dataframe to balance.
-    method (str): The method to be used to get the dataset balanced ('under', 'over' or 'combo')
-    random_state (int): The random seed to use for sampling.
+        s2_df_mod (pd.DataFrame): The original dataframe to balance.
+        method (str): The method to be used to sample the dataset ('under' or 'over')
+        random_state (int): The random seed to use for sampling (default 0).
 
     Returns:
-    pd.DataFrame: A balanced dataframe where the number of 0's and 1's are equal for each unique crop field.
+        pd.DataFrame: A balanced dataframe where the number of 0's and 1's are equal for each unique crop field.
     """
 
     # Get the unique crop field names
@@ -68,9 +69,9 @@ def get_balanced_df(s2_df_mod, method, random_state):
     # Initialize an empty list to store the restricted dataframes for each crop field
     restricted_dfs = []
 
-    if (method == 'under'):
-        # Loop over each crop field
-        for crop_field in crop_fields:
+    # Loop over each crop field
+    for crop_field in crop_fields:
+        if (method == 'under'):
             # Get the rows where y = 1 and crop_field_name is equal to the current crop field
             manured_cf_df = s2_df_mod[(s2_df_mod['y'] == 1) & (s2_df_mod['crop_field_name'] == crop_field)]
 
@@ -80,11 +81,24 @@ def get_balanced_df(s2_df_mod, method, random_state):
             # Sample the same number of rows from the not_manured_cf_df as there are in the manured_cf_df
             not_manured_cf_sampled_df = not_manured_cf_df.sample(n=len(manured_cf_df), random_state=random_state)
 
-            # Concatenate the manured_cf_df and the not_manured_cf_sampled_df into a single dataframe for the current crop field
-            restricted_cf_df = pd.concat([manured_cf_df, not_manured_cf_sampled_df])
+            # Append the restricted dataframe for the current crop field to the list of restricted dataframes
+            restricted_dfs.append(pd.concat([manured_cf_df, not_manured_cf_sampled_df]))
+        
+        elif (method == 'over'):
+            # Get the rows where y = 1 and crop_field_name is equal to the current crop field
+            manured_cf_df = s2_df_mod[(s2_df_mod['y'] == 1) & (s2_df_mod['crop_field_name'] == crop_field)]
+
+            # Get the rows where y = 0 and crop_field_name is equal to the current crop field
+            not_manured_cf_df = s2_df_mod[(s2_df_mod['y'] == 0) & (s2_df_mod['crop_field_name'] == crop_field)]
+
+            # Replicate the manured_cf_df by the replication factor
+            manured_cf_replicated_df = pd.concat([manured_cf_df]*len(not_manured_cf_df), ignore_index=True)
+
+            # Sample the same number of rows from the manured_cf_replicated_df as there are in the not_manured_cf_df
+            manured_cf_sampled_df = manured_cf_replicated_df.sample(n=len(not_manured_cf_df), random_state=random_state, replace=True)
 
             # Append the restricted dataframe for the current crop field to the list of restricted dataframes
-            restricted_dfs.append(restricted_cf_df)
+            restricted_dfs.append(pd.concat([not_manured_cf_df, manured_cf_sampled_df]))
 
     # Concatenate all of the restricted dataframes into a single balanced dataframe
     restricted_df = pd.concat(restricted_dfs)
@@ -98,46 +112,67 @@ def get_balanced_df(s2_df_mod, method, random_state):
 
 def measure_scv_performances(X, y, model, scaler=None, n_folds=5, random_state=0):
     '''
-    This function performs Stratified Cross-Validation for a given model and scaler using the KFold method, and returns the 
-    precision, recall and f1-score for each class. It also prints a summary of the model, scaler, number of 
-    KFolds and elapsed time.
+    This function performs Stratified Cross-Validation for a given model and scaler using the KFold method, and returns the mean
+    accuracy, precision, recall and f1-score for both train and test sets. It also prints a summary of the model, scaler, number
+    of KFolds and elapsed time.
 
     Parameters:
         X (pandas DataFrame): The input features to be used for stratified cross-validation.
         y (pandas Series): The target variable to be used for stratified cross-validation.
         model (sklearn estimator): The model to be trained and tested using stratified cross-validation.
-        scaler (sklearn scaler): The scaler to be used to normalize the features.
-        n_folds (int): The number of folds to be used for stratified cross-validation.
-        random_state (int): The random state to be used for the KFold object.
+        scaler (sklearn scaler): The scaler to be used to normalize the features (default None).
+        n_folds (int): The number of folds to be used for stratified cross-validation (default 5).
+        random_state (int): The random state to be used for the KFold object (default 0).
 
     Returns:
         None
     '''
-    # define the stratified-cross-validation object
+    # Define the stratified-cross-validation object
     kf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=random_state)
 
-    # perform stratified-cross-validation and get the predicted classes for each fold
-    y_pred = []
+    # Initialize lists to store the results for each fold
+    train_acc, test_acc = [], []
+    train_prec, test_prec = [], []
+    train_rec, test_rec = [], []
+    train_f1, test_f1 = [], []
+
     start_time = time.time()
 
     for train_index, test_index in kf.split(X, y):
-        # normalize the train folds (if scaler not None)
+        # Normalize the train folds (if scaler not None)
         X_train = X.iloc[train_index] if scaler == None else scaler.fit_transform(X.iloc[train_index])
         y_train = y.iloc[train_index]
         
-        # fit the logistic regression model
+        # Fit the logistic regression model
         model.fit(X_train, y_train)
         
-        # normalize the test fold (if scaler not None)
-        X_test = X.iloc[test_index] if scaler == None else scaler.fit_transform(X.iloc[test_index])
+        # Normalize the test fold (if scaler not None)
+        X_test = X.iloc[test_index] if scaler == None else scaler.transform(X.iloc[test_index])
+        y_test = y.iloc[test_index]
+
+        # Predict the classes for the train and test fold
+        y_pred_train = model.predict(X_train)
+        y_pred_test = model.predict(X_test)
         
-        # predict the classes for the test fold
-        y_pred.extend(model.predict(X_test))
-    
+        # Calculate the evaluation metrics for the train and test fold
+        train_acc.append(accuracy_score(y_train, y_pred_train))
+        test_acc.append(accuracy_score(y_test, y_pred_test))
+
+        train_prec.append(precision_score(y_train, y_pred_train, average='weighted', zero_division=0))
+        test_prec.append(precision_score(y_test, y_pred_test, average='weighted', zero_division=0))
+
+        train_rec.append(recall_score(y_train, y_pred_train, average='weighted', zero_division=0))
+        test_rec.append(recall_score(y_test, y_pred_test, average='weighted', zero_division=0))
+
+        train_f1.append(f1_score(y_train, y_pred_train, average='weighted', zero_division=0))
+        test_f1.append(f1_score(y_test, y_pred_test, average='weighted', zero_division=0))
+
+    # Print the results
     end_time = time.time()
-    # print the results
-    print('-'*100)
-    print('Summary: ' + str(model) + ', ' + str(scaler) + ', ' + str(n_folds) + ' KFolds' + ', ' + str(round((end_time - start_time), 3)) + 's (elapsed time)\n')
-    print('Class 0 (~Manured) - Precision:', round(precision_score(y, y_pred, pos_label=0), 2), ' - Recall:', round(recall_score(y, y_pred, pos_label=0), 2), ' - F1:', round(f1_score(y, y_pred, pos_label=0), 2))
-    print('Class 1 (Manured)  - Precision:', round(precision_score(y, y_pred, pos_label=1), 2), ' - Recall:', round(recall_score(y, y_pred, pos_label=1), 2), ' - F1:', round(f1_score(y, y_pred, pos_label=1), 2))
-    print('-'*100)
+    print('-'*115)
+    print('Summary: ' + str(model) + ', ' + str(scaler) + ', ' + str(n_folds) + ' KFolds' + ', ' + str(round((end_time - start_time), 3)) + 's')
+    print('Calculating the mean accuracy, precision, recall and f1 using KFolds - averaging also over classes layer\n')
+    print('Dataset   -   Mean Accuracy   -   Mean Precision   -   Mean Recall   -   Mean F1')
+    print(' Train' + ' '*12 + str("{:.2f}".format(np.mean(train_acc))) + ' '*16  + str("{:.2f}".format(np.mean(train_prec))) + ' '*16  + str("{:.2f}".format(np.mean(train_rec))) + ' '*13 + str("{:.2f}".format(np.mean(train_f1))))
+    print(' Test'  + ' '*13 + str("{:.2f}".format(np.mean(test_acc)))  + ' '*16  + str("{:.2f}".format(np.mean(test_prec)))  + ' '*16  + str("{:.2f}".format(np.mean(test_rec)))  + ' '*13 + str("{:.2f}".format(np.mean(test_f1))))
+    print('-'*115)
