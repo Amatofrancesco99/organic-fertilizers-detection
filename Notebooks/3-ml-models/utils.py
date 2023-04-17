@@ -68,7 +68,6 @@ def get_balanced_df(s2_df_mod, method, random_state=0):
     Returns:
         pandas DataFrame: A balanced dataframe where the number of 0's and 1's are equal for each unique crop field.
     """
-
     # Get the unique crop field names
     crop_fields = s2_df_mod['crop_field_name'].unique()
 
