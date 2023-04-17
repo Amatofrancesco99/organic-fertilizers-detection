@@ -33,15 +33,14 @@ def get_modified_df(s_df, sentinel):
     def check_overlap(crop_df):
         manure_dates = crop_df['manure_dates'].tolist()
         s2_dates = crop_df[acq_date_col_name].tolist()
-        results = [np.NAN]
-        for j in range(1, len(s2_dates) - 1):
-            results.append(0)
+        results = [np.NAN] + [0] * (len(s2_dates) - 1)
+        for j in range(0, len(s2_dates) - 1):
             for i in range(len(manure_dates)):
                 if (s2_dates[j] < manure_dates[i] <= s2_dates[j+1]):
-                    results.append(1)
+                    results[j+1] = 1
                     break
         return pd.Series(results)
-
+    
     # Add the column y
     s_df_mod['y'] = s_df_orig.groupby('crop_field_name').apply(check_overlap).reset_index(drop=True)
 
