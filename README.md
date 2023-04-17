@@ -34,7 +34,7 @@ To facilitate the feature extraction process, a Python library called [**`sentin
 ### **2. Analysis**
 The objective of the [*analysis notebook*](./Notebooks/2-analysis/notebook.ipynb) is to analyze the datasets generated in the previous notebook by performing data visualization, obtaining statistics, and exploring correlations between different indexes. The main goal is to identify which optical and radar indexes most affected by the application of manure on crop fields. To assess the significance of feature importance, a t-test has been used. The formula used to calculate feature importance is:
 
-$$feat\_imp = \frac{|feat\_val_{imm\_after\_manure} - feat\_val_{imm\_before\_manure}|}{\max{|daily\_feat\_diff_{\neg{manure}}|}}$$
+$$featImp = \frac{|featVal_{immAfterManure} - featVal_{immBeforeManure}|}{\max{|dailyFeatDiff_{\neg{manure}}|}}$$
 
 This formula calculates the feature importance by comparing the immediate values of a feature (index) before and after manure application, normalized by the maximum daily difference in the feature values observed when manure had not applied.
 
