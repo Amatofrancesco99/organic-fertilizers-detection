@@ -16,22 +16,26 @@ def get_modified_df(s_df, sentinel):
     Returns:
         pandas DataFrame: The modified DataFrame with the additional 'y' column.
     '''
+    # Create a copy of the passed DataFrame
     s_df_orig = s_df.copy()
 
     # Convert the s2_acquisition_date column to datetime
     acq_date_col_name = 's' + str(sentinel) +'_acquisition_date'
     s_df_orig[acq_date_col_name] = pd.to_datetime(s_df[acq_date_col_name])
 
-    # Convert the manure_dates column to a list of dates
-    s_df_orig['manure_dates'] = s_df_orig['manure_dates'].apply(lambda x: pd.to_datetime(eval(x)) if isinstance(x, str) else [])
-
     # Calculate the absolute difference between consecutive dates grouped by crop_field_name
     s_df_mod = s_df_orig.groupby('crop_field_name', as_index=False).apply(lambda x: x.drop(columns=[acq_date_col_name, 'manure_dates']).apply(lambda y: y.diff().abs() if y.name != 'crop_field_name' else y))
+
+    # Add a column that contains the string representation of the date difference between two
+    # consequent s_acquisition_date values for a specific crop field
+    s_df_mod['consequent_s' +str(sentinel) + '_acquisitions'] = s_df_orig.groupby('crop_field_name')[acq_date_col_name].apply(lambda x: ['[{}, {}]'.format(x.iloc[i].strftime('%Y-%m-%d'), x.iloc[i+1].strftime('%Y-%m-%d')) for i in range(-1, len(x)-1)]).explode().reset_index(drop=True)
+    # Add column manure_dates that is the same of the original dataframe
+    s_df_mod['manure_dates'] = s_df_orig['manure_dates']
 
     # Add a column y that contains 1 if one of the manure dates is within two consequent s2_acquisition_date for a specific crop field,
     # otherwise 0
     def check_overlap(crop_df):
-        manure_dates = crop_df['manure_dates'].tolist()
+        manure_dates = crop_df['manure_dates'].apply(lambda x: pd.to_datetime(eval(x)) if isinstance(x, str) else []).tolist()
         s2_dates = crop_df[acq_date_col_name].tolist()
         results = [np.NAN] + [0] * (len(s2_dates) - 1)
         for j in range(0, len(s2_dates) - 1):
@@ -43,6 +47,9 @@ def get_modified_df(s_df, sentinel):
     
     # Add the column y
     s_df_mod['y'] = s_df_orig.groupby('crop_field_name').apply(check_overlap).reset_index(drop=True)
+
+    # Rearrange columns order
+    s_df_mod = s_df_mod[['crop_field_name', 'consequent_s' +str(sentinel) + '_acquisitions'] + [col for col in s_df_mod.columns if col not in ['crop_field_name', 'consequent_s' +str(sentinel) + '_acquisitions', 'manure_dates', 'y']] + ['manure_dates', 'y']]
 
     # Return the dataframe and removes NaN rows
     return s_df_mod.dropna()
