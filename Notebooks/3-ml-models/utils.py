@@ -21,7 +21,7 @@ def get_modified_df(s_df, sentinel):
 
     # Convert the s2_acquisition_date column to datetime
     acq_date_col_name = 's' + str(sentinel) +'_acquisition_date'
-    s_df_orig[acq_date_col_name] = pd.to_datetime(s_df[acq_date_col_name])
+    s_df_orig[acq_date_col_name] = pd.to_datetime(s_df_orig[acq_date_col_name])
 
     # Calculate the absolute difference between consecutive dates grouped by crop_field_name
     s_df_mod = s_df_orig.groupby('crop_field_name', as_index=False).apply(lambda x: x.drop(columns=[acq_date_col_name, 'manure_dates']).apply(lambda y: y.diff().abs() if y.name != 'crop_field_name' else y))
