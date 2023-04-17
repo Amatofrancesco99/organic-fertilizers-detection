@@ -122,7 +122,7 @@ def get_features_importance(s_df, sentinel, hide_plain=False):
     results_df['p_value'] = p_values
 
     # Return the DataFrame
-    return results_df
+    return results_df.reset_index()
 
 
 def display_features_trends(s_df, fields_pos, features, features_pos, sentinel):
@@ -135,6 +135,9 @@ def display_features_trends(s_df, fields_pos, features, features_pos, sentinel):
         features (list): A list of feature names to plot.
         features_pos (tuple): A tuple containing the start and end position of the features to plot.
         sentinel (int): The Sentinel number (1 for Sentinel-1 or 2 for Sentinel-2).
+    
+    Returns:
+        None
     '''
     # Iterate over each crop field name
     for crop_field_name in s_df['crop_field_name'].unique()[fields_pos[0]: fields_pos[-1]]:
