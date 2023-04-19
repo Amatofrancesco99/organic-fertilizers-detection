@@ -174,10 +174,10 @@ def measure_scv_performances(X, y, model, scaler=None, n_folds=5, random_state=0
 
     # Print the results
     end_time = time.time()
-    print('-'*115)
+    print('-'*110)
     print('Summary: ' + str(model) + ', ' + str(scaler) + ', ' + str(n_folds) + ' KFolds' + ', ' + str(round((end_time - start_time), 3)) + 's')
     print('Calculating the mean accuracy, precision, recall and f1 using KFolds - averaging also over classes layer\n')
     print('Dataset   -   Mean Accuracy   -   Mean Precision   -   Mean Recall   -   Mean F1')
     print(' Train' + ' '*12 + str("{:.2f}".format(np.mean(train_acc))) + ' '*16  + str("{:.2f}".format(np.mean(train_prec))) + ' '*16  + str("{:.2f}".format(np.mean(train_rec))) + ' '*13 + str("{:.2f}".format(np.mean(train_f1))))
     print(' Test'  + ' '*13 + str("{:.2f}".format(np.mean(test_acc)))  + ' '*16  + str("{:.2f}".format(np.mean(test_prec)))  + ' '*16  + str("{:.2f}".format(np.mean(test_rec)))  + ' '*13 + str("{:.2f}".format(np.mean(test_f1))))
-    print('-'*115)
+    print('-'*110)
