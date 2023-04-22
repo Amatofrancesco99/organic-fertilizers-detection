@@ -1,54 +1,65 @@
-# **master-thesis** 🎓🌍
+<div align="center">
 
-The objective is to build a Machine Learning (ML) model capable of detecting the dates when crop fields have been manured, exploiting Sentinel satellites data. 
+# **Detecting crop-fields manure application dates, exploiting Copernicus satellites and Machine Learning**
 
-![Views](https://komarev.com/ghpvc/?username=AF99MasterThesis&label=Views&style=for-the-badge&color=blueviolet)
-![Jupyter Notebook](https://img.shields.io/badge/jupyter-%23FF0000.svg?style=for-the-badge&logo=jupyter&logoColor=white)
-![Google](https://img.shields.io/badge/google-90EE0?style=for-the-badge&logo=google&logoColor=white)
-![Python](https://img.shields.io/badge/Python-0000FF?style=for-the-badge&logo=python&logoColor=white)
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
+![Views](https://komarev.com/ghpvc/?username=AF99MasterThesis&label=Views&color=lightgrey)
+<br>
+![Jupyter Notebook](https://img.shields.io/badge/JUPYTER-%23FF0000.svg?style=flat&logo=jupyter&logoColor=white&color=critical)
+![Google](https://img.shields.io/badge/GOOGLE_EARTH_ENGINE-90EE0?style=flat&logo=google&logoColor=white&color=success)
+![Python](https://img.shields.io/badge/PYTHON-0000FF?style=flat&logo=python&logoColor=white&color=informational)
 
-*** 
-## **What is satellite data analysis?**
-The market for satellite data analytics services is witnessing notable expansion, attributed to the rise in investment in the space sector. These services encompass the provision of big data geo-analytics using advanced machine learning techniques and proprietary algorithms to deliver valuable insights for enterprises, utilizing data from satellites orbiting the Earth. 
+</div>
 
-By leveraging Earth observation (EO) data, satellite data analytics services facilitate informed decision-making in critical areas like commodity markets, infrastructure monitoring, agriculture management, and forestry management. Furthermore, satellite data services employ image processing to analyze the data captured by satellites, providing businesses with data analytics capabilities that drive operational efficiency and transparency across various industries.
+## **Description**
+This is the repository for the paper [*Detecting crop-fields manure application dates, exploiting Copernicus satellites and Machine Learning*]().
 
-*** 
-## **Why manure detection is relevant in EO context?**
-It is important to detect when a crop field has been manured, especially during unauthorized periods, because it can help prevent environmental pollution and ensure compliance with regulations such as the EU Directive on nitrates.
+## **Abstract**
+> Detecting when manure has been applied in crop fields is crucial for many purposes, such as maintaining soil fertility, productivity, and environmental compliance, and for verifying farmers' compliance with nitrates directive. 
+To achieve this, time series of mean spectral indexes (both radar and optical) have been extracted from specific Regions of Interest (ROI), located in the northern part of Spain (a [*Python library*](https://pypi.org/project/sentinel-satellites/), available for public use, have been published to efficiently extract these indexes).
+The spectral indexes most impacted by manure application have been identified, and different Machine Learning models have been compared (using different performance metrics) to solve the problem.
+The final proposed method provides a valuable foundation for developing tools to monitor manure application in crop fields and ensure compliance with environmental regulations.
 
-When manure is applied to agricultural fields, it contains high levels of nitrogen and phosphorus, which can leach into groundwater or runoff into nearby water bodies. This can lead to excessive nutrient concentrations in the water, causing eutrophication, harmful algal blooms, and other environmental problems.
+## **Download**
+You can download a copy of all the files in this repository by cloning the git repository:
 
-To prevent these issues, many countries have regulations in place that restrict the use of manure during certain periods, such as winter or rainy seasons when the risk of nutrient leaching is higher. In the EU, the Directive on nitrates regulates the use of fertilizers, including manure, in agriculture to prevent water pollution from nitrate runoff.
+```bash
+git clone https://github.com/Amatofrancesco99/master-thesis.git
+```
 
-By detecting when a crop field has been manured, and whether it was done during unauthorized periods, Earth Observation can help authorities enforce regulations and prevent environmental pollution. This can be done using satellite data to detect the spectral signature of manure on agricultural fields, as well as other indicators such as soil moisture and vegetation health, which can provide additional information on the timing and extent of manure application.
+To install the required libraries in order to replicate the different notebooks results you need to run the following command:
+```bash
+pip install -r requirements.txt
+```
 
-***
-## **Notebooks summary description**
-
-### **1. Features extraction**
-The objective of the [*features extraction notebook*](./Notebooks/1-features-extraction/notebook.ipynb) is to extract useful mean indexes values from crop fields of interest, using Sentinel satellites imagery. These features have been used for performing analysis and building machine learning models with a specific focus on detecting manure. 
-
+## **Notebooks general descriptions**
+### **Features extraction**
+The objective of the [*features extraction notebook*](./Notebooks/1-features-extraction/notebook.ipynb) is to extract useful mean indexes values from crop fields of interest, using Sentinel satellites imagery. <br>
 To facilitate the feature extraction process, a Python library called [**`sentinel-satellites`**](https://pypi.org/project/sentinel-satellites/) has been created and made available on the PyPI repository for public use.
 
-### **2. Analysis**
+### **Analysis**
 The objective of the [*analysis notebook*](./Notebooks/2-analysis/notebook.ipynb) is to analyze the datasets generated in the previous notebook by performing data visualization, obtaining statistics, and exploring correlations between different indexes. The main goal is to identify which optical and radar indexes most affected by the application of manure on crop fields. To assess the significance of feature importance, a t-test has been used. The formula used to calculate feature importance is:
 
 $$featImp = \frac{|featVal_{immAfterManure} - featVal_{immBeforeManure}|}{\max{|dailyFeatDiff_{\neg{manure}}|}}$$
 
 This formula calculates the feature importance by comparing the immediate values of a feature (index) before and after manure application, normalized by the maximum daily difference in the feature values observed when manure had not applied.
 
-### **3. ML models**
+### **ML models**
 The [*ML models notebook*](./Notebooks/3-ml-models/notebook.ipynb) aims to build and compare various machine learning models for predicting the application of manure in crop fields. The models are evaluated based on accuracy, precision, recall, and F1 score. Several aspects are covered, including overfitting/underfitting, dataset balancing (undersampling/oversampling), feature subset selection (wrapper methods), performance evaluation (stratified K-fold cross-validation), and feature normalization techniques.
-
-<br>
+<br><br>
 
 Please consider that each notebook has its own `utils` file or folder.
 
-*** 
-## **Install requirements**
-
-In order to install the required libraries to replicate the different notebooks results, you have to run the following command in bash/terminal:
-```bash
-$ pip install -r requirements.txt
+***
+## **Cite this work**
+```latex
+@software{Amato_Detecting_crop-fields_manure_2023,
+author = {Amato, F. and Dell'Acqua, F. and Marzi, D.},
+doi = {10.5281/detecting-manure-application-dates.1234},
+month = apr,
+title = {{Detecting crop-fields manure application dates, exploiting Copernicus satellites and Machine Learning}},
+url = {https://github.com/Amatofrancesco99/master-thesis},
+version = {1.0.0},
+year = {2023}
+}
 ```
