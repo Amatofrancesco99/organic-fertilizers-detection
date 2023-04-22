@@ -32,7 +32,7 @@ To install the required libraries in order to replicate the different notebooks 
 pip install -r requirements.txt
 ```
 
-## **Notebooks general descriptions**
+## **Notebooks**
 ### **Features extraction**
 The objective of the [*features extraction notebook*](./Notebooks/1-features-extraction/notebook.ipynb) is to extract useful mean indexes values from crop fields of interest, using Sentinel satellites imagery. <br>
 To facilitate the feature extraction process, a Python library called [**`sentinel-satellites`**](https://pypi.org/project/sentinel-satellites/) has been created and made available on the PyPI repository for public use.
