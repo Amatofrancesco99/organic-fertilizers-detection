@@ -3,6 +3,10 @@ message: "If you use this software, please cite it as below."
 authors:
   - family-names: "Amato"
     given-names: "F."
+  - family-names: "Dell'Acqua"
+    given-names: "F."
+  - family-names: "Marzi"
+    given-names: "D."
 title: "Detecting crop-fields manure application dates, exploiting Copernicus satellites and Machine Learning"
 version: 1.0.0
 doi: 10.5281/detecting-manure-application-dates.1234
