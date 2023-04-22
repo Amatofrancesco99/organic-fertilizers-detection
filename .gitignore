@@ -144,4 +144,7 @@ Recordings/*
 # Files for PyPI sentinel-satellite library
 Notebooks/1-features-extraction/utils/pyproject.toml
 Notebooks/1-features-extraction/utils/setup.cfg
+
+# Some Notebooks folders
+Notebooks/4-application
 Notebooks/others
