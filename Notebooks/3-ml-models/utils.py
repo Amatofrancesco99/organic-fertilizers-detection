@@ -52,16 +52,16 @@ def get_modified_df(s_df, sentinel):
     s_df_mod = s_df_mod[['crop_field_name', 'consequent_s' +str(sentinel) + '_acquisitions'] + [col for col in s_df_mod.columns if col not in ['crop_field_name', 'consequent_s' +str(sentinel) + '_acquisitions', 'manure_dates', 'y']] + ['manure_dates', 'y']]
 
     # Return the dataframe and removes NaN rows
-    return s_df_mod.dropna()
+    return s_df_mod.dropna().reset_index(drop=True)
 
 
-def get_balanced_df(s2_df_mod, method, random_state=0):
+def get_balanced_df(s_df_mod, method, random_state=0):
     """
     Returns a balanced dataframe where the number of 0's and 1's are equal for each unique crop field (exploiting oversampling
     or undersampling methods).
 
     Args:
-        s2_df_mod (pandas DataFrame): The original dataframe to balance.
+        s_df_mod (pandas DataFrame): The original dataframe to balance.
         method (str): The method to be used to sample the dataset ('under' or 'over')
         random_state (int): The random seed to use for sampling (default 0).
 
@@ -69,7 +69,7 @@ def get_balanced_df(s2_df_mod, method, random_state=0):
         pandas DataFrame: A balanced dataframe where the number of 0's and 1's are equal for each unique crop field.
     """
     # Get the unique crop field names
-    crop_fields = s2_df_mod['crop_field_name'].unique()
+    crop_fields = s_df_mod['crop_field_name'].unique()
 
     # Initialize an empty list to store the restricted dataframes for each crop field
     restricted_dfs = []
@@ -78,10 +78,10 @@ def get_balanced_df(s2_df_mod, method, random_state=0):
     for crop_field in crop_fields:
         if (method == 'under'):
             # Get the rows where y = 1 and crop_field_name is equal to the current crop field
-            manured_cf_df = s2_df_mod[(s2_df_mod['y'] == 1) & (s2_df_mod['crop_field_name'] == crop_field)]
+            manured_cf_df = s_df_mod[(s_df_mod['y'] == 1) & (s_df_mod['crop_field_name'] == crop_field)]
 
             # Get the rows where y = 0 and crop_field_name is equal to the current crop field
-            not_manured_cf_df = s2_df_mod[(s2_df_mod['y'] == 0) & (s2_df_mod['crop_field_name'] == crop_field)]
+            not_manured_cf_df = s_df_mod[(s_df_mod['y'] == 0) & (s_df_mod['crop_field_name'] == crop_field)]
 
             # Sample the same number of rows from the not_manured_cf_df as there are in the manured_cf_df
             not_manured_cf_sampled_df = not_manured_cf_df.sample(n=len(manured_cf_df), random_state=random_state)
@@ -91,10 +91,10 @@ def get_balanced_df(s2_df_mod, method, random_state=0):
         
         elif (method == 'over'):
             # Get the rows where y = 1 and crop_field_name is equal to the current crop field
-            manured_cf_df = s2_df_mod[(s2_df_mod['y'] == 1) & (s2_df_mod['crop_field_name'] == crop_field)]
+            manured_cf_df = s_df_mod[(s_df_mod['y'] == 1) & (s_df_mod['crop_field_name'] == crop_field)]
 
             # Get the rows where y = 0 and crop_field_name is equal to the current crop field
-            not_manured_cf_df = s2_df_mod[(s2_df_mod['y'] == 0) & (s2_df_mod['crop_field_name'] == crop_field)]
+            not_manured_cf_df = s_df_mod[(s_df_mod['y'] == 0) & (s_df_mod['crop_field_name'] == crop_field)]
 
             # Replicate the manured_cf_df by the replication factor
             manured_cf_replicated_df = pd.concat([manured_cf_df]*len(not_manured_cf_df), ignore_index=True)
@@ -108,11 +108,8 @@ def get_balanced_df(s2_df_mod, method, random_state=0):
     # Concatenate all of the restricted dataframes into a single balanced dataframe
     restricted_df = pd.concat(restricted_dfs)
 
-    # Sort the balanced dataframe by index
-    restricted_df.sort_index(inplace=True)
-
     # Return the balanced dataframe
-    return restricted_df
+    return restricted_df.sort_values(by=[s_df_mod.columns[0], s_df_mod.columns[1]]).reset_index(drop=True)
 
 
 def measure_scv_performances(X, y, model, scaler=None, n_folds=5, random_state=0):
