@@ -95,6 +95,6 @@ P-VNS | 2022-12-17 | 955.040359  | 1208.792825 | 1617.324664 | ...  | 0.688394 |
     * Adjusted descriptions and fixed all `optical_features` and `radar_features` functions, such that now are working directly on mean bands values (relative to a field of interest in a single date)
     * Added EE filters and allowed users to specify the list of parameters values to be used for filters to extract Sentinel Images Collections
 
-* `version: 0.0.10`, `0.0.11`, `0.0.12` & `0.0.13` (current):
+* from `version: 0.0.10` to `0.0.14` (current):
     * Improved descriptions and fixed broken links due to code refactoring
     * Added `.reset_index(drop=True)` method when return the extracted indexes DataFrame
