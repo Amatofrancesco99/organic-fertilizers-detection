@@ -1,6 +1,6 @@
 <div align="center">
 
-# **Detecting crop-fields manure application dates, exploiting Copernicus satellites and Machine Learning**
+# **Detection of manure application on crop fields leveraging Copernicus satellite data and Machine Learning**
 
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
 ![Views](https://komarev.com/ghpvc/?username=AF99MasterThesis&label=Views&color=lightgrey)
@@ -12,7 +12,7 @@
 </div>
 
 ## **Description**
-This is the repository for the paper [*Detecting crop-fields manure application dates, exploiting Copernicus satellites and Machine Learning*]().
+This is the repository for the paper [*Detection of manure application on crop fields leveraging Copernicus satellite data and Machine Learning*]().
 
 ## **Abstract**
 > Detecting when manure has been applied in crop fields is crucial for many purposes, such as maintaining soil fertility, productivity, and environmental compliance, and for verifying farmers' compliance with nitrates directive. 
