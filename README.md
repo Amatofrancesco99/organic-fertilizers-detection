@@ -49,11 +49,11 @@ Please consider that each notebook has its own `utils` file or folder.
 ***
 ## **Cite this work**
 ```latex
-@software{Amato_Detecting_crop-fields_manure_2023,
+@software{Amato_Detection_of_manure_2023,
 author = {Amato, F. and Dell'Acqua, F. and Marzi, D.},
-doi = {10.5281/detecting-manure-application-dates.1234},
+doi = {10.5281/detection-of-manure-application.1234},
 month = apr,
-title = {{Detecting crop-fields manure application dates, exploiting Copernicus satellites and Machine Learning}},
+title = {{Detection of manure application on crop fields leveraging Copernicus satellite data and Machine Learning}},
 url = {https://github.com/Amatofrancesco99/master-thesis},
 version = {1.0.0},
 year = {2023}
