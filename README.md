@@ -3,7 +3,7 @@
 # **Detection of manure application on crop fields leveraging Copernicus satellite data and Machine Learning**
 
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
-![Views](https://komarev.com/ghpvc/?username=AF99MasterThesis&label=Views&color=lightgrey)
+![Views](https://komarev.com/ghpvc/?username=AF99DetectionOfManureApplication&label=Views&color=lightgrey)
 <br>
 ![Jupyter Notebook](https://img.shields.io/badge/JUPYTER-%23FF0000.svg?style=flat&logo=jupyter&logoColor=white&color=critical)
 ![Google](https://img.shields.io/badge/GOOGLE_EARTH_ENGINE-90EE0?style=flat&logo=google&logoColor=white&color=success)
@@ -12,10 +12,10 @@
 </div>
 
 ## **Description**
-This is the repository for the paper [*Detection of manure application on crop fields leveraging Copernicus satellite data and Machine Learning*]().
+This is the repository for the thesis [*Detection of manure application on crop fields leveraging Copernicus satellite data and Machine Learning*]().
 
 ## **Abstract**
-> Detecting when manure has been applied in crop fields is crucial for many purposes, such as maintaining soil fertility, productivity, and environmental compliance, and for verifying farmers' compliance with nitrates directive. 
+> Detecting when manure has been applied in crop fields is crucial for many purposes, such as maintaining soil fertility, productivity, environmental compliance, and for verifying farmers' adherence to nitrates directive. 
 To achieve this, time series of mean spectral indexes (both radar and optical) have been extracted from specific Regions of Interest (ROI), located in the northern part of Spain (a [*Python library*](https://pypi.org/project/sentinel-satellites/), available for public use, have been published to efficiently extract these indexes).
 The spectral indexes most impacted by manure application have been identified, and different Machine Learning models have been compared (using different performance metrics) to solve the problem.
 The final proposed method provides a valuable foundation for developing tools to monitor manure application in crop fields and ensure compliance with environmental regulations.
