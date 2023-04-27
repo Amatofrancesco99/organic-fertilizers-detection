@@ -15,9 +15,9 @@
 This is the repository for the thesis [*Detection of manure application on crop fields leveraging Copernicus satellite data and Machine Learning*]().
 
 ## **Abstract**
-> Detecting when manure has been applied in crop fields is crucial for many purposes, such as maintaining soil fertility, productivity, environmental compliance, and for verifying farmers' adherence to nitrates directive. 
-To achieve this, time series of mean spectral indexes (both radar and optical) have been extracted from specific Regions of Interest (ROI), located in the northern part of Spain (a [*Python library*](https://pypi.org/project/sentinel-satellites/), available for public use, have been published to efficiently extract these indexes).
-The spectral indexes most impacted by manure application have been identified, and different Machine Learning models have been compared (using different performance metrics) to solve the problem.
+> Detecting when manure has been applied on crop fields is crucial for many purposes, such as maintaining soil fertility, productivity, environmental compliance, and for verifying farmers' adherence to nitrates directive. 
+To achieve this, time series of mean spectral indexes (both radar and optical) have been extracted from specific Regions of Interest (ROI), located in the northern part of Spain (a [*Python library*](https://pypi.org/project/sentinel-satellites/), available for public use, has been deployed in order to efficiently extract these indexes). 
+After that, the spectral indexes most impacted by manure application have been identified, and different Machine Learning models have been compared (using different performance metrics). 
 The final proposed method provides a valuable foundation for developing tools to monitor manure application in crop fields and ensure compliance with environmental regulations.
 
 ## **Download**
