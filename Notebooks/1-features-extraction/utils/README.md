@@ -5,7 +5,7 @@
 ![stars](https://img.shields.io/github/stars/Amatofrancesco99/master-thesis.svg)
 
 This library provides an **easy-to-use**, **comprehensive**, and **flexible** way to work with satellites data from the Sentinel-1 and Sentinel-2 satellites. Its key advantages include: a **well-documented** API, **support** for the mainly used satellites, **open-source code**, and **regular updates**.<br>
-In addition to the already mentioned advantages, the implemented code also **exploits machine parallelism** (designed to work efficiently with large volumes of data, allowing for faster processing times and improved performances) and **relies on Google Earth Engine (GEE) APIs** (used to access satellites data and perform some tasks such as *cloud masking*, *image compositing*, and *time series selection*).
+In addition to the already mentioned advantages, the implemented code also **exploits multi-threading** (designed to work efficiently allowing to improve the number of parallel I/O requests) and **relies on Google Earth Engine (GEE) APIs** (used to access satellites data and perform some tasks such as *cloud masking*, *image compositing*, and *time series selection*).
 
 These advantages make it an excellent tool for anyone working with satellites data, since it allows to *generate datasets that can be both easily used for data analysis and efficiently integrated with well-known ML libraries, to deploy models*.
 
@@ -21,11 +21,11 @@ This library is composed of lot of functions, the main ones are here described.
 ## `get_features()` function
 
 It allows to get from an [input pandas DataFrame](#input-dataframe) composed of fields information, [an output DataFrame](#output-dataframe) that contains for each time [selected satellites](#how-to-execute-it) (sentinel-1 or sentinel-2) passed over the specified fields, within a given time period, all the mean values of some of the most used indexes (optical or radar).<br>
-Please consider the [modifications](#whats-new) for indexes values assessment, starting from version `0.0.9` (reduced extraction time at the cost of making approximation).<br>
+Please consider the [modifications](#whats-new) for indexes values assessment, starting from version `0.0.9` (reduced extraction time at the cost of making approximations).<br>
 
 The `filters_params` parameter is a list containing the values of the Earth Engine filters to be used for extracting Image Collections, with the specified sentinel satellites. For Sentinel-2 the first parameter in the list is the value of the `CLOUDY_PIXEL_PERCENTAGE` filter (`LESS OR EQUAL TO` - values in range `[0, 100]`), whereas for Sentinel-1 the first parameter in the list is the value of the `orbitProperties_pass` filter (`ASCENDING` or `DESCENDING`).
 
-The `fields_threads` parameter is the number of threads to dedicate to parallelization over the fields level, the remaining part instead is used to apply parallelization over dates level. The value of this parameter should be high (with respect to the overall number of threads exploitable - see your computer specifications) if you have a lot of fields but a little time-span to consider, whereas if you have fewer fields but a bigger time-span you should decrease this parameter. Finally, if you have lot of fields with lot of dates to process it should may be optimal considering half of the overall number of threads available. <br>A correct choice of this parameter can drastically reduce the features extraction time.
+The `fields_threads` parameter is the number of threads to dedicate to parallelization of requests over the fields level, the remaining part instead is used to apply parallelization over dates level. The value of this parameter should be high (with respect to the overall number of threads exploitable) if you have a lot of fields but a little time-span to consider, whereas if you have fewer fields but a bigger time-span you should decrease this parameter. Finally, if you have lot of fields with lot of dates to process it should may be optimal considering half of the overall number of threads available. <br>A correct choice of this parameter can drastically reduce the features extraction time.
 
 See the [code](https://github.com/Amatofrancesco99/master-thesis/blob/main/Notebooks/1-features-extraction/utils/sentinel_satellites.py) for a better understanding.
 
@@ -78,7 +78,7 @@ P-VNS | 2022-12-17 | 955.040359  | 1208.792825 | 1617.324664 | ...  | 0.688394 |
     * Now, in `get_features()` function, column names in the passed pandas DataFrame that contains field name and coordinates does not matter (just column position matters)
     * Added new optical indexes
     * Fixed bug case occurring when `fields_df` has just one field inside
-    * Improving parallelization. Now each thread does not only work on gathering all features for a single field, but also on computing them on dates chunks
+    * Improving requests parallelization. Now each thread does not only work on gathering all features for a single field, but also on computing them on dates chunks
 
 * `version: 0.0.6`:
     * Code refactoring and improved descriptions
@@ -95,6 +95,6 @@ P-VNS | 2022-12-17 | 955.040359  | 1208.792825 | 1617.324664 | ...  | 0.688394 |
     * Adjusted descriptions and fixed all `optical_features` and `radar_features` functions, such that now are working directly on mean bands values (relative to a field of interest in a single date)
     * Added EE filters and allowed users to specify the list of parameters values to be used for filters to extract Sentinel Images Collections
 
-* from `version: 0.0.10` to `0.0.14` (current):
+* from `version: 0.0.10` to `0.0.15` (current):
     * Improved descriptions and fixed broken links due to code refactoring
     * Added `.reset_index(drop=True)` method when return the extracted indexes DataFrame

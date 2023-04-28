@@ -129,9 +129,8 @@ def process_chunk(s_filtered, chunk, polygon, field_col_name, field_name, sentin
 def parallelize_features_read(s_filtered, date_range, polygon, field_col_name, field_name, sentinel, already_occupied_threads):
     '''
     Reads Sentinel-1 or Sentinel-2 images and gathers sentinel features.
-    Furthermore, it works in parallel in order to exploit the entire computational power of the machine on which you are
-    running this function (load balanced the work of each core) - otherwise to compute the same task would have taken too much
-    time. Each core works on different date chunks, maintaining fixed the field.
+    Furthermore, it makes multiple I/O requests to GEE in parallel - otherwise to compute the same task would have taken too much
+    time. Each thread works on different date chunks, maintaining fixed the field.
 
     Parameters:
         s_filtered (ee.ImageCollection): A data object with filtered and pre-processed Sentinel-1 and Sentinel-2 images
@@ -154,7 +153,7 @@ def parallelize_features_read(s_filtered, date_range, polygon, field_col_name, f
 
     # Create threads to process date chunks in parallel
     acquisitions = []
-    # Each core works on a different chunks of dates to gather features
+    # Each thread works on a different chunks of dates to gather features
     with concurrent.futures.ThreadPoolExecutor(num_chunks) as executor:
         futures = []
         for chunk in date_chunks:
@@ -216,10 +215,10 @@ def get_features(fields_df, start_date, end_date, sentinel, filters_params, fiel
     It allows to get from a pandas DataFrame composed of crop fields information, another DataFrame that contains 
     for each time a satellite (sentinel-1 or sentinel-2) passed on regions of interest, within a given time period, 
     all the mainly used features mean values (optical or radar).
-    Furthermore, it works in parallel in order to exploit the entire computational power of the machine on which you are
-    running this function (load balanced the work of each core) - otherwise to compute the same task would have taken too much
-    time. Each core works on a different field (obviously if you have only one field this part is not parallelized).
-    Please consider that parallelization has been applied on two levels: on fields and on dates.
+    Furthermore, it makes multiple I/O requests to Google Earth Engine (GEE) in parallel - otherwise to compute the same task 
+    would have taken too much time. Each thread works on different date chunks, maintaining fixed the field (obviously if you
+    have only one field this part is not parallelized).
+    Please consider that parallelization of requests has been applied on two levels: on fields and on dates.
 
     Args:
         fields_df (pandas DataFrame): A DataFrame containing the crop field name and polygon coordinates for each field.
@@ -231,10 +230,10 @@ def get_features(fields_df, start_date, end_date, sentinel, filters_params, fiel
                 * first parameter in the list rapresents the value of the 'orbitProperties_pass' filter ('ASCENDING' or 'DESCENDING')
             * For Sentinel-2:
                 * first parameter in the list represents the value of the 'CLOUDY_PIXEL_PERCENTAGE' filter ('LTE' - values in range [0, 100])
-        fields_threads (int): The number of threads to dedicate to parallelization over the fields level, the remaining part 
+        fields_threads (int): The number of threads to dedicate to parallelization of requests over the fields level, the remaining part 
             instead is used to apply parallelization over dates level. The value of this parameter should be high (with respect 
-            to the overall number of threads exploitable - see your computer specifications) if you have a lot of crop fields but
-            a little time-span to consider, whereas if you have fewer fields but a bigger time-span you should decrease this parameter.
+            to the overall number of threads exploitable) if you have a lot of crop fields but a little time-span to consider, whereas
+            if you have fewer fields but a bigger time-span you should decrease this parameter.
             Finally, if you have lot of fields with lot of dates to process it should may be optimal considering half of the 
             overall number of threads available.
 
@@ -248,7 +247,7 @@ def get_features(fields_df, start_date, end_date, sentinel, filters_params, fiel
     df_list = []
 
     # Calculate all the indices for each field, for the selected time period
-    # In parallell, to improve performances (each core works on one single field)
+    # In parallell, to improve performances (each thread works on one single field)
     with concurrent.futures.ThreadPoolExecutor(fields_threads) as executor:
         futures = []
         # When just one field is inside the fields_df DataFrame
