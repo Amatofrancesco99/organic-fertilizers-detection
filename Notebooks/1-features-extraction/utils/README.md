@@ -5,7 +5,7 @@
 ![stars](https://img.shields.io/github/stars/Amatofrancesco99/master-thesis.svg)
 
 This library provides an **easy-to-use**, **comprehensive**, and **flexible** way to work with satellites data from the Sentinel-1 and Sentinel-2 satellites. Its key advantages include: a **well-documented** API, **support** for the mainly used satellites, **open-source code**, and **regular updates**.<br>
-In addition to the already mentioned advantages, the implemented code also **exploits multi-threading** (designed to work efficiently allowing to improve the number of parallel I/O requests) and **relies on Google Earth Engine (GEE) APIs** (used to access satellites data and perform some tasks such as *cloud masking*, *image compositing*, and *time series selection*).
+In addition to the already mentioned advantages, the implemented code **relies on Google Earth Engine (GEE) APIs** (used to access satellites data and perform some tasks such as *cloud masking*, *image compositing*, and *time series selection*) and **exploits multi-threading** (designed to work efficiently, by making a lot of parallel I/O requests to GEE).
 
 These advantages make it an excellent tool for anyone working with satellites data, since it allows to *generate datasets that can be both easily used for data analysis and efficiently integrated with well-known ML libraries, to deploy models*.
 
