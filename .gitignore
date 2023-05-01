@@ -134,9 +134,8 @@ dmypy.json
 # Spanish dataset
 Datasets/manure-pasture-fields/
 
-# All papers and notes .pdf
-Notes/Papers/
-Notes/notes.pdf
+# All Notes
+Notes/
 
 # All audio-call recs
 Recordings/
