@@ -42,6 +42,10 @@ The objective of the [*analysis notebook*](./Notebooks/2-analysis/notebook.ipynb
 
 ### **ML models**
 The [*ML models notebook*](./Notebooks/3-ml-models/notebook.ipynb) aims to build and compare various machine learning models for predicting the application of manure in crop fields. The models are evaluated based on accuracy, precision, recall, and F1 score. Several aspects are covered, including overfitting/underfitting, dataset balancing (undersampling/oversampling), feature subset selection (wrapper methods), performance evaluation (stratified K-fold cross-validation), and feature normalization techniques.
+
+### **Generalization**
+The [*generalization notebook*](./Notebooks/4-generalization/notebook.ipynb) is designed to assess the generalization capabilities of the *best model selected*.
+Its objective is to evaluate the performances (of that model) in detecting when crop fields have been manured in a completely different context from the one it was trained on (different country, soil types, climate conditions, farming practices, ...). Generalization is a critical issue, as it determines how well the model can perform on new, unseen data. 
 <br><br>
 
 Please consider that each notebook has its own `utils` file or folder.
