@@ -114,9 +114,9 @@ def get_balanced_df(s_df_mod, method, random_state=0):
 
 def measure_scv_performances(X, y, model, scaler=None, n_folds=5, random_state=0):
     '''
-    This function performs Stratified Cross-Validation for a given model and scaler using the KFold method, and returns the mean
-    accuracy, precision, recall and f1-score for both train and test sets. It also prints a summary of the model, scaler, number
-    of KFolds and elapsed time.
+    This function performs Stratified Cross-Validation for a given model and scaler using the KFold method, and returns a 
+    DataFrame containing mean accuracy, precision, recall and f1-score for both train and test sets. It also prints a summary
+    of the model, scaler, number of KFolds and elapsed time.
 
     Parameters:
         X (pandas DataFrame): The input features to be used for stratified cross-validation.
@@ -127,7 +127,7 @@ def measure_scv_performances(X, y, model, scaler=None, n_folds=5, random_state=0
         random_state (int): The random state to be used for the KFold object (default 0).
 
     Returns:
-        None
+        pandas DataFrame: a DataFrame containing the different performance metrics results, considering the passed parameters
     '''
     # Define the stratified-cross-validation object
     kf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=random_state)
@@ -169,12 +169,17 @@ def measure_scv_performances(X, y, model, scaler=None, n_folds=5, random_state=0
         train_f1.append(f1_score(y_train, y_pred_train, average='weighted', zero_division=0))
         test_f1.append(f1_score(y_test, y_pred_test, average='weighted', zero_division=0))
 
-    # Print the results
-    end_time = time.time()
-    print('-'*110)
-    print('Summary: ' + str(model) + ', ' + str(scaler) + ', ' + str(n_folds) + ' KFolds' + ', ' + str(round((end_time - start_time), 3)) + 's')
-    print('Calculating the mean accuracy, precision, recall and f1 using KFolds - averaging also over classes layer\n')
-    print('Dataset   -   Mean Accuracy   -   Mean Precision   -   Mean Recall   -   Mean F1')
-    print(' Train' + ' '*12 + str("{:.2f}".format(np.mean(train_acc))) + ' '*16  + str("{:.2f}".format(np.mean(train_prec))) + ' '*16  + str("{:.2f}".format(np.mean(train_rec))) + ' '*13 + str("{:.2f}".format(np.mean(train_f1))))
-    print(' Test'  + ' '*13 + str("{:.2f}".format(np.mean(test_acc)))  + ' '*16  + str("{:.2f}".format(np.mean(test_prec)))  + ' '*16  + str("{:.2f}".format(np.mean(test_rec)))  + ' '*13 + str("{:.2f}".format(np.mean(test_f1))))
-    print('-'*110)
+    # Print the details
+    print('Summary: ' + str(model) + ', ' + str(scaler) + ', ' + str(n_folds) + ' KFolds' + ', ' + str(round((time.time() - start_time), 3)) + 's')
+    
+    # Create a DataFrame containing performance metrics results
+    performances_df = pd.DataFrame.from_dict({
+        'Dataset': ['Train', 'Test'],
+        'Mean Accuracy': [round(np.mean(train_acc), 2), round(np.mean(test_acc), 2)],
+        'Mean Precision': [round(np.mean(train_prec), 2), round(np.mean(test_prec), 2)],
+        'Mean Recall': [round(np.mean(train_rec), 2), round(np.mean(test_rec), 2)],
+        'Mean F1': [round(np.mean(train_f1), 2), round(np.mean(test_f1), 2)]
+    }).set_index(keys='Dataset')
+
+    # Return the performances DataFrame
+    return performances_df
