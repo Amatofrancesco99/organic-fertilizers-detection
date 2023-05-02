@@ -170,7 +170,7 @@ def measure_scv_performances(X, y, model, scaler=None, n_folds=5, random_state=0
         test_f1.append(f1_score(y_test, y_pred_test, average='weighted', zero_division=0))
 
     # Print the details
-    print('Summary: ' + str(model) + ', ' + str(scaler) + ', ' + str(n_folds) + ' KFolds' + ', ' + str(round((time.time() - start_time), 3)) + 's')
+    print('Summary: ' + str(model) + ', ' + str(scaler) + ', ' + str(n_folds) + ' KFolds' + ', ' + str(round((time.time() - start_time), 3)) + 's\n')
     
     # Create a DataFrame containing performance metrics results
     performances_df = pd.DataFrame.from_dict({
