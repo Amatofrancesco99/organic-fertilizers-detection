@@ -9,6 +9,5 @@ authors:
     given-names: "D."
 title: "Detection of manure application on crop fields leveraging Copernicus satellite data and Machine Learning"
 version: 1.0.0
-doi: 10.5281/detection-of-manure-application.1234
-date-released: 2023-04-22
+date-released: 2023-05-02
 url: "https://github.com/Amatofrancesco99/master-thesis"
