@@ -41,7 +41,7 @@ To facilitate the feature extraction process, a Python library called [**`sentin
 The objective of the [*analysis notebook*](./Notebooks/2-analysis/notebook.ipynb) is to analyze the datasets generated in the previous notebook by performing data visualization, obtaining statistics, and exploring correlations between different indexes. The main goal is to identify which optical and radar indexes are most affected by the application of manure on crop fields. To assess the significance of feature importance, a t-test has been used.
 
 ### **ML models**
-The [*ML models notebook*](./Notebooks/3-ml-models/notebook.ipynb) aims to build and compare various machine learning models for predicting the application of manure in crop fields. The models are evaluated based on accuracy, precision, recall, and F1 score. Several aspects are covered, including overfitting/underfitting, dataset balancing (undersampling/oversampling), feature subset selection (wrapper methods), performance evaluation (stratified K-fold cross-validation), and feature normalization techniques.
+The [*ML models notebook*](./Notebooks/3-ml-models/notebook.ipynb) aims to build and compare various machine learning models for predicting the application of manure in crop fields. The models are evaluated based on accuracy, precision, recall, and F1 score. Several aspects are covered, including overfitting/underfitting, dataset balancing (undersampling or oversampling), feature subset selection (wrapper methods), performance evaluation (stratified K-fold cross-validation), and feature normalization techniques.
 
 ### **Generalization**
 The [*generalization notebook*](./Notebooks/4-generalization/notebook.ipynb) is designed to assess the generalization capabilities of the *best model selected*.
