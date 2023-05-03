@@ -1,4 +1,4 @@
-import pandas as pd, numpy as np, time
+import pandas as pd, numpy as np, time, pickle
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
@@ -112,7 +112,7 @@ def get_balanced_df(s_df_mod, method, random_state=0):
     return restricted_df.sort_values(by=[s_df_mod.columns[0], s_df_mod.columns[1]]).reset_index(drop=True)
 
 
-def measure_scv_performances(X, y, model, scaler=None, n_folds=5, random_state=0):
+def measure_scv_performances(X, y, model, scaler=None, n_folds=5, random_state=0, save=False):
     '''
     This function performs Stratified Cross-Validation for a given model and scaler using the KFold method, and returns a 
     DataFrame containing mean accuracy, precision, recall and f1-score for both train and test sets. It also prints a summary
@@ -125,9 +125,10 @@ def measure_scv_performances(X, y, model, scaler=None, n_folds=5, random_state=0
         scaler (sklearn scaler): The scaler to be used to normalize the features (default None).
         n_folds (int): The number of folds to be used for stratified cross-validation (default 5).
         random_state (int): The random state to be used for the KFold object (default 0).
+        save (boolean): Whether to save the obtained model and scaler, for later use (default False).
 
     Returns:
-        pandas DataFrame: a DataFrame containing the different performance metrics results, considering the passed parameters
+        pandas DataFrame: a DataFrame containing the different performance metrics results, considering the passed parameters.
     '''
     # Define the stratified-cross-validation object
     kf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=random_state)
@@ -169,6 +170,11 @@ def measure_scv_performances(X, y, model, scaler=None, n_folds=5, random_state=0
         train_f1.append(f1_score(y_train, y_pred_train, average='weighted', zero_division=0))
         test_f1.append(f1_score(y_test, y_pred_test, average='weighted', zero_division=0))
 
+    # Save the last model and scaler (if asked)
+    if (save):
+        pickle.dump(model, open('saved-config/model.pkl', 'wb'))
+        pickle.dump(scaler, open('saved-config/scaler.pkl', 'wb'))
+    
     # Print the details
     print('Summary: ' + str(model) + ', ' + str(scaler) + ', ' + str(n_folds) + ' KFolds' + ', ' + str(round((time.time() - start_time), 3)) + 's\n')
     
