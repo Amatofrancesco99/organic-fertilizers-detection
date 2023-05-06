@@ -1,4 +1,5 @@
 import pandas as pd, numpy as np, time, pickle
+from sklearn.utils import resample
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
@@ -24,7 +25,7 @@ def get_modified_df(s_df, sentinel):
     s_df_orig[acq_date_col_name] = pd.to_datetime(s_df_orig[acq_date_col_name])
 
     # Calculate the absolute difference between consecutive dates grouped by crop_field_name
-    s_df_mod = s_df_orig.groupby('crop_field_name', as_index=False).apply(lambda x: x.drop(columns=[acq_date_col_name, 'manure_dates']).apply(lambda y: y.diff().abs() if y.name != 'crop_field_name' else y))
+    s_df_mod = s_df_orig.groupby('crop_field_name').apply(lambda x: x.drop(columns=[acq_date_col_name, 'manure_dates']).apply(lambda y: y.diff().abs() if y.name != 'crop_field_name' else y))
 
     # Add a column that contains the string representation of the date difference between two
     # consequent s_acquisition_date values for a specific crop field
@@ -84,10 +85,10 @@ def get_balanced_df(s_df_mod, method, random_state=0):
             not_manured_cf_df = s_df_mod[(s_df_mod['y'] == 0) & (s_df_mod['crop_field_name'] == crop_field)]
 
             # Sample the same number of rows from the not_manured_cf_df as there are in the manured_cf_df
-            not_manured_cf_sampled_df = not_manured_cf_df.sample(n=len(manured_cf_df), random_state=random_state)
+            not_manured_cf_downsampled_df = not_manured_cf_df.sample(n=len(manured_cf_df), random_state=random_state)
 
             # Append the restricted dataframe for the current crop field to the list of restricted dataframes
-            restricted_dfs.append(pd.concat([manured_cf_df, not_manured_cf_sampled_df]))
+            restricted_dfs.append(pd.concat([manured_cf_df, not_manured_cf_downsampled_df]))
         
         elif (method == 'over'):
             # Get the rows where y = 1 and crop_field_name is equal to the current crop field
@@ -96,14 +97,11 @@ def get_balanced_df(s_df_mod, method, random_state=0):
             # Get the rows where y = 0 and crop_field_name is equal to the current crop field
             not_manured_cf_df = s_df_mod[(s_df_mod['y'] == 0) & (s_df_mod['crop_field_name'] == crop_field)]
 
-            # Replicate the manured_cf_df by the replication factor
-            manured_cf_replicated_df = pd.concat([manured_cf_df]*len(not_manured_cf_df), ignore_index=True)
-
-            # Sample the same number of rows from the manured_cf_replicated_df as there are in the not_manured_cf_df
-            manured_cf_sampled_df = manured_cf_replicated_df.sample(n=len(not_manured_cf_df), random_state=random_state, replace=True)
+            # Oversample the minority class (y = 1)
+            manured_cf_oversampled_df = resample(manured_cf_df, n_samples=len(not_manured_cf_df), random_state=random_state)
 
             # Append the restricted dataframe for the current crop field to the list of restricted dataframes
-            restricted_dfs.append(pd.concat([not_manured_cf_df, manured_cf_sampled_df]))
+            restricted_dfs.append(pd.concat([not_manured_cf_df, manured_cf_oversampled_df]))
 
     # Concatenate all of the restricted dataframes into a single balanced dataframe
     restricted_df = pd.concat(restricted_dfs)
