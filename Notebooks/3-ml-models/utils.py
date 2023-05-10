@@ -20,12 +20,12 @@ def get_modified_df(s_df, sentinel):
     # Create a copy of the passed DataFrame
     s_df_orig = s_df.copy()
 
-    # Convert the s2_acquisition_date column to datetime
+    # Convert the sX_acquisition_date column to datetime
     acq_date_col_name = 's' + str(sentinel) +'_acquisition_date'
     s_df_orig[acq_date_col_name] = pd.to_datetime(s_df_orig[acq_date_col_name])
 
-    # Calculate the absolute difference between consecutive dates grouped by crop_field_name
-    s_df_mod = s_df_orig.groupby('crop_field_name').apply(lambda x: x.drop(columns=[acq_date_col_name, 'manure_dates']).apply(lambda y: y.diff().abs() if y.name != 'crop_field_name' else y))
+    # Calculate the difference between consecutive dates grouped by crop_field_name
+    s_df_mod = s_df_orig.groupby('crop_field_name').apply(lambda x: x.drop(columns=[acq_date_col_name, 'manure_dates']).apply(lambda y: y.diff() if y.name != 'crop_field_name' else y))
 
     # Add a column that contains the string representation of the date difference between two
     # consequent s_acquisition_date values for a specific crop field
@@ -33,7 +33,7 @@ def get_modified_df(s_df, sentinel):
     # Add column manure_dates that is the same of the original dataframe
     s_df_mod['manure_dates'] = s_df_orig['manure_dates']
 
-    # Add a column y that contains 1 if one of the manure dates is within two consequent s2_acquisition_date for a specific crop field,
+    # Add a column y that contains 1 if one of the manure dates is within two consequent s_acquisition_date for a specific crop field,
     # otherwise 0
     def check_overlap(crop_df):
         manure_dates = crop_df['manure_dates'].apply(lambda x: pd.to_datetime(eval(x)) if isinstance(x, str) else []).tolist()
