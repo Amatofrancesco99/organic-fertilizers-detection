@@ -142,7 +142,7 @@ def display_features_trends(s_df, fields_pos, features, features_pos, sentinel):
     # Iterate over each crop field name
     for crop_field_name in s_df['crop_field_name'].unique()[fields_pos[0]: fields_pos[-1]]:
         # Create a new plot
-        plt.figure()
+        plt.figure(figsize=(12,5))
         legend = []
         
         # Iterate over each feature to plot
