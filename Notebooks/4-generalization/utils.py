@@ -92,7 +92,7 @@ def get_normalized_df(s_df, method, feature_range=(-1, 1)):
 
 def display_features_trends(s_df, fields_pos, features, features_pos, sentinel):
     '''
-    This function plots the trends of selected features for selected crop fields
+    This function plots the trends of selected features for selected crop fields.
 
     Parameters:
         s_df (pandas DataFrame): A DataFrame containing Sentinel-1 or Sentinel-2 features extracted.
@@ -102,12 +102,12 @@ def display_features_trends(s_df, fields_pos, features, features_pos, sentinel):
         sentinel (int): The Sentinel number (1 for Sentinel-1 or 2 for Sentinel-2).
     
     Returns:
-        None
+        None.
     '''
     # Iterate over each crop field name
     for crop_field_name in s_df['crop_field_name'].unique()[fields_pos[0]: fields_pos[-1]]:
         # Create a new plot
-        plt.figure(figsize=(15,5))
+        plt.figure(figsize=(16,5))
         legend = []
         
         # Iterate over each feature to plot
@@ -117,16 +117,25 @@ def display_features_trends(s_df, fields_pos, features, features_pos, sentinel):
                      s_df[s_df['crop_field_name'] == crop_field_name][feature])
             legend.append(feature)
         
-        # Add a legend to the plot
-        plt.legend(legend)
-        
         # Get the manure application dates for the crop field
-        manure_date = s_df[s_df['crop_field_name'] == crop_field_name]['manure_dates'].unique()
-        
+        manure_dates = s_df[s_df['crop_field_name'] == crop_field_name]['manure_dates'].unique()
+
         # Set the plot title, x-axis label, and y-axis label
-        plt.title('Trend of features more impacted by manure\nCrop field name: ' + str(crop_field_name) + ' - Manure dates: ' + str(manure_date))
+        plt.title('Trend of features more impacted by manure\nCrop field name: ' + str(crop_field_name) + ' - Manure dates: ' + str(manure_dates))
         plt.xlabel('Acquisition date')
         plt.ylabel('Feature value')
+
+        # Add vertical dashed lines before and after each manure application date
+        for manure_date in manure_dates:
+            manure_date = pd.to_datetime(manure_date.replace('[','').replace(']',''))
+            before_manure_date = s_df[(s_df['crop_field_name'] == crop_field_name) & (pd.to_datetime(s_df['s' + str(sentinel) + '_acquisition_date']) < manure_date)]['s' + str(sentinel) + '_acquisition_date'].iloc[-1]
+            after_or_equal_manure_date = s_df[(s_df['crop_field_name'] == crop_field_name) & (pd.to_datetime(s_df['s' + str(sentinel) + '_acquisition_date']) >= manure_date)]['s' + str(sentinel) + '_acquisition_date'].iloc[0]
+            plt.axvline(x=before_manure_date, linestyle='--', color='k')
+            plt.axvline(x=after_or_equal_manure_date, linestyle='--', color='k')
+            legend.append('RoI')
         
+        # Add a legend to the plot
+        plt.legend(legend, loc='upper right')
+
         # Rotate the x-axis ticks
         plt.xticks(rotation=90)
