@@ -135,7 +135,7 @@ def display_features_trends(s_df, fields_pos, features, features_pos, sentinel):
             legend.append('RoI')
         
         # Add a legend to the plot
-        plt.legend(legend, loc='upper right')
+        plt.legend(legend)
 
         # Rotate the x-axis ticks
         plt.xticks(rotation=90)
