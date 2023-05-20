@@ -19,7 +19,7 @@ This is the repository for the project *"Detection of manure application on crop
 To achieve this, time series of mean spectral indexes (both radar and optical) have been extracted from specific Regions of Interest (ROI), located in the northern part of Spain, using some Copernicus satellites (a [*Python library*](https://pypi.org/project/sentinel-satellites/), available for public use, has been deployed in order to efficiently extract those indexes). 
 After that, the spectral indexes most impacted by manure application have been identified, and different Machine Learning models have been compared (using different performance metrics). 
 Finally, to assess the generalization capabilities of the final obtained model, some agricultural fields located in northern part of Italy have been considered.
-The final proposed method provides a valuable foundation for developing tools to monitor manure application in crop fields and ensure compliance with environmental regulations.
+The final proposed method provides a valuable foundation for developing a tool to monitor manure application in crop fields and ensure compliance with environmental regulations.
 
 ## **Download**
 You can download a copy of all the files in this repository by cloning the git repository:
