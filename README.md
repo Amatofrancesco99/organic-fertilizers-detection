@@ -12,7 +12,7 @@
 </div>
 
 ## **Description**
-This is the repository for the project *"Detection of manure application on crop fields leveraging Copernicus satellite data and Machine Learning"* [[**thesis**]()] [[**paper**]()].
+This is the repository for the project *"Detection of manure application on crop fields leveraging Copernicus satellite data and Machine Learning"* [[**thesis**]()].
 
 ## **Abstract**
 > Detecting when manure has been applied on crop fields is crucial for many purposes, such as maintaining soil fertility, productivity, environmental compliance, and for verifying farmers' adherence to nitrates directive. 
