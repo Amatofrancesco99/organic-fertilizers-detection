@@ -43,7 +43,7 @@ def get_features_importance(s_df, sentinel, hide_plain=False):
     This function basically computes a rank that contains the importance of features. The more the features (on average, considering
     different crop fields and different manure dates) have been changed with respect to the yearly trend, when manure has not been
     applied, the higher the importance.
-    In so doing we can understand which are the features that have been mostly impacted by fertilization.
+    In so doing we can understand which are the features that have been mostly impacted by manure application.
     A metric to perform the feature importance has been defined in terms of:
         feature_importance = abs(feature_val[imm_after_manure] - feature_val[imm_before_manure]) / max(abs(daily_feature_diff[~manure]))
     Furthermore a T-Test has been applied in order to understand how many times occurred that the feature importance was higher then
@@ -74,7 +74,7 @@ def get_features_importance(s_df, sentinel, hide_plain=False):
         manure_date = pd.to_datetime(df['manure_dates'].apply(lambda x: x.replace("['", "").replace("']", "")), format='%Y-%m-%d').unique()[0]
 
         # Get the indices of the rows that are between 0 and 15 days after the manure date (why 15 days? Because the effects
-        # of fertilization on crop field can be seen not just the day immediately after, but also for few weeks after)
+        # of manure application on crop field can be seen not just the day immediately after, but also for few weeks after)
         # https://www.mdpi.com/2072-4292/13/9/1616
         manure_indices =  ((pd.to_datetime(df['s' + str(sentinel) + '_acquisition_date'], format='%Y-%m-%d') - manure_date).dt.days >= 0) & ((pd.to_datetime(df['s' + str(sentinel) + '_acquisition_date'], format='%Y-%m-%d') - manure_date).dt.days <= 15)
         # Get the indices of the rows before manure date 
