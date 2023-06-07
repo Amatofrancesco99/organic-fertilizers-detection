@@ -3,7 +3,7 @@
 # **Detection of manure application on crop fields leveraging Copernicus satellite data and Machine Learning**
 
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
-![Views](https://komarev.com/ghpvc/?username=AF99DetectionOfManureApplication&label=Views&color=lightgrey)
+![Views](https://komarev.com/ghpvc/?username=DetectionOfManureApplication&label=Views&color=lightgrey)
 <br>
 ![Jupyter Notebook](https://img.shields.io/badge/JUPYTER-%23FF0000.svg?style=flat&logo=jupyter&logoColor=white&color=critical)
 ![Google](https://img.shields.io/badge/GOOGLE_EARTH_ENGINE-90EE0?style=flat&logo=google&logoColor=white&color=success)
