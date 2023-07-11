@@ -1,6 +1,6 @@
 <div align="center">
 
-# **Detection of manure application on crop fields leveraging Copernicus satellite data and Machine Learning**
+# **Detection of manure application on crop fields leveraging satellite data and Machine Learning**
 
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
 ![Views](https://komarev.com/ghpvc/?username=DetectionOfManureApplication&label=Views&color=lightgrey)
@@ -12,11 +12,11 @@
 </div>
 
 ## **Description**
-This is the repository for the project *"Detection of manure application on crop fields leveraging Copernicus satellite data and Machine Learning"* [[**thesis**]()].
+This is the repository for the project *"Detection of manure application on crop fields leveraging satellite data and Machine Learning"* [[**thesis**]()].
 
 ## **Abstract**
 > Detecting when manure has been applied on crop fields is crucial for many purposes, such as maintaining soil fertility, productivity, environmental compliance, and for verifying farmers' adherence to nitrates directive. 
-To achieve this, time series of mean spectral indexes (both radar and optical) have been extracted from specific Regions of Interest (ROI), located in the northern part of Spain, using some Copernicus satellites (a [*Python library*](https://pypi.org/project/sentinel-satellites/), available for public use, has been deployed in order to efficiently extract those indexes). 
+To achieve this, time series of mean spectral indexes (both radar and optical) have been extracted from specific Regions of Interest (ROI), located in the northern part of Spain, using some satellites (a [*Python library*](https://pypi.org/project/ee-satellites/), available for public use, has been deployed in order to efficiently extract those indexes). 
 After that, the spectral indexes most impacted by manure application have been identified, and different Machine Learning models have been compared (using different performance metrics). 
 Finally, to assess the generalization capabilities of the final obtained model, some agricultural fields located in northern part of Italy have been considered.
 The proposed method provides a valuable foundation for developing a tool to monitor manure application in crop fields and ensure compliance with environmental regulations.
@@ -35,8 +35,8 @@ pip install -r requirements.txt
 
 ## **Notebooks**
 ### Features extraction
-The objective of the [*features extraction notebook*](./Notebooks/1-features-extraction/notebook.ipynb) is to extract useful mean indexes values from crop fields of interest, using Sentinel satellites imagery. <br>
-To facilitate the feature extraction process, a Python library called [**`sentinel-satellites`**](https://pypi.org/project/sentinel-satellites/) has been created and made available on the PyPI repository for public use.
+The objective of the [*features extraction notebook*](./Notebooks/1-features-extraction/notebook.ipynb) is to extract useful mean indexes values from crop fields of interest, using satellites imagery. <br>
+To facilitate the feature extraction process, a Python library called [**`ee-satellites`**](https://pypi.org/project/ee-satellites/) has been created and made available on the PyPI repository for public use.
 
 ### Analysis
 The objective of the [*analysis notebook*](./Notebooks/2-analysis/notebook.ipynb) is to analyze the datasets generated in the previous notebook by performing data visualization, obtaining statistics, and exploring correlations between different indexes. The main goal is to identify which optical and radar indexes are most affected by the application of manure on crop fields. To assess the significance of feature importance, a t-test has been used.
@@ -57,7 +57,7 @@ Please consider that each notebook has its own `utils` file or folder.
 @software{Amato_Detection_of_manure_2023,
 author = {Amato, F. and Dell'Acqua, F. and Marzi, D.},
 month = may,
-title = {{Detection of manure application on crop fields leveraging Copernicus satellite data and Machine Learning}},
+title = {{Detection of manure application on crop fields leveraging satellite data and Machine Learning}},
 url = {https://github.com/Amatofrancesco99/master-thesis},
 version = {1.0.0},
 year = {2023}
