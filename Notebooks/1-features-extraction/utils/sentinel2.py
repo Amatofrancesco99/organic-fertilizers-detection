@@ -9,11 +9,11 @@ def get_all_bands(image, date, polygon):
     Spectral bands refer to specific ranges of electromagnetic radiation (EMR) that are used in remote sensing 
     applications to capture information about the earth's surface. Spectral bands are usually defined by their
     wavelength or frequency, and are typically categorized into broad groups based on their spectral characteristics, 
-    such as visible, near-infrared, shortwave infrared, and thermal infrared.
+    such as visible, near-infrared, and shortwave infrared.
     Each spectral band provides unique information about the reflectance and absorption properties of features on the
     earth's surface. For example, visible bands are sensitive to the reflectance of green vegetation, water, and soil,
-    while near-infrared bands are sensitive to the reflectance of healthy vegetation. Shortwave infrared bands can detect
-    differences in moisture content and mineralogy, while thermal infrared bands can detect heat signatures.
+    while near-infrared bands are sensitive to the reflectance of healthy vegetation. Finally, shortwave infrared bands
+    can detect differences in moisture content and mineralogy.
 
     Args:
         image (ee.ImageCollection): The Sentinel 2 image collection filtered by date and bounds.
