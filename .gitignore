@@ -140,7 +140,7 @@ Notes/
 # All audio-call recs
 Recordings/
 
-# Files for PyPI sentinel-satellite library
+# Files for PyPI ee-satellites library
 Notebooks/1-features-extraction/utils/pyproject.toml
 Notebooks/1-features-extraction/utils/setup.cfg
 
