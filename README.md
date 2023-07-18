@@ -15,11 +15,14 @@
 This is the repository for the project *"Detection of manure application on crop fields leveraging satellite data and Machine Learning"* [[thesis]]().
 
 ## **Abstract**
-> Detecting when manure has been applied on crop fields is crucial for many purposes, such as maintaining soil fertility, productivity, environmental compliance, and for verifying farmers' adherence to nitrates directive. 
-To achieve this, time series of mean spectral indexes (radar, optical and thermal) have been extracted from specific regions of interest (ROIs), located in Spain and Italy, using different satellites (a [*Python library*](https://pypi.org/project/ee-satellites/), available for public use, has been developed in order to efficiently extract those indexes).
-After that, the spectral indexes most impacted by manure application have been identified, and different Machine Learning models have been compared, especially for what concerns their generalization capabilities.
-A brief summary of the most important obtained results is that there is homogeneity of spectral response to the manure application of crops located within the same country, and that combining optical and thermal indexes allows achieving the best classification performances, for both the two ROIs (the same is not true for radar indexes).
-The proposed method provides a valuable foundation for developing a tool to monitor manure application in crop fields and ensure compliance with environmental regulations.
+> Detecting application of manure on crop fields is crucial for remotely assessing the correct management of crops; this is important to various goals such as maintaining soil fertility, productivity, environmental compliance, and - in the EU - also for verifying farmers' compliance with the nitrates directive. 
+In the framework outlined above, this thesis research aims at developing an automated, Machine Learning (ML) based, method for detecting manure application leveraging Earth Observation (EO) satellite data.
+Time series of spectral indexes (radar, optical and thermal) have been extracted from specific regions of interest (ROIs), located in Spain and Italy, using different EO satellites; a [Python library](https://pypi.org/project/ee-satellites/), made available for public use, has been developed to efficiently accomplish this purpose.
+After that, the spectral indexes most impacted by manure application have been identified and selected as input to different ML models, which have been compared especially for what regards their generalization capabilities.
+Tests have been conducted over both ROIs, including mixed cases where training was carried out on fields from one country and classification on fields located in another (or same).
+In short, results suggest that the spectral signature of manure application is homogeneous within fields located in the same country, and that combining optical and thermal data allows achieving the best classification performances.
+Radar data, instead, provides no significant contribution to system performances.
+The proposed method provides a valuable foundation toward development of a tool to monitor manure application in crop fields and ensure compliance with environmental regulations.
 
 ## **Download**
 You can download a copy of all the files in this repository by cloning the git repository:
