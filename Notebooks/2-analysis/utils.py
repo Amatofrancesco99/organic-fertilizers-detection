@@ -7,7 +7,7 @@ def get_normalized_df(s_df, method, feature_range=(-1, 1)):
     This function applies a selected normalization method to the pandas DataFrame passed as parameter.
 
     Parameters:
-        s_df (pandas DataFrame): A data object containing Sentinel-1 or Sentinel-2 features extracted.
+        s_df (pandas DataFrame): A data object containing features extracted from a satellite.
         method (str): The method to be used in order to normalize the DataFrame (allowed: "min-max", "mean-var", 
         "max-abs", "robust").
         feature_range (tuple): A tuple containing the values that you want your scaled features will range (default: (-1, 1)).
@@ -38,7 +38,7 @@ def get_normalized_df(s_df, method, feature_range=(-1, 1)):
     return s_df_norm
 
 
-def get_features_importance(s_df, sentinel, hide_plain=False):
+def get_features_importance(s_df, satellite, hide_plain=False):
     '''
     This function basically computes a rank that contains the importance of features. The more the features (on average, considering
     different crop fields and different manure dates) have been changed with respect to the yearly trend, when manure has not been
@@ -46,14 +46,14 @@ def get_features_importance(s_df, sentinel, hide_plain=False):
     In so doing we can understand which are the features that have been mostly impacted by manure application.
     A metric to perform the feature importance has been defined in terms of:
         feature_importance = abs(feature_val[imm_after_manure] - feature_val[imm_before_manure]) / max(abs(daily_feature_diff[~manure]))
-    Furthermore a T-Test has been applied in order to understand how many times occurred that the feature importance was higher then
+    Furthermore a t-test has been applied in order to understand how many times occurred that the feature importance was higher then
     0, considering different manure dates and many crop fields. 
 
     Parameters:
-        s_df (pandas DataFrame): A data object containing sentinel-1 or sentinel-2 features extracted.
-        sentinel (int): The sentinel number (1 for Sentinel-1 or 2 for Sentinel-2).
+        s_df (pandas DataFrame): A data object containing features extracted from a satellite.
+        satellite (str): The satellite name abbreviated ('s1' for Sentinel-1, 's2' for Sentinel-2, or 'l8' for Landsat-8).
         hide_plain (boolean): Whether to consider the plain features (for Sentinel-1 are polarizations, while for
-        Sentinel-2 are bands).
+        Sentinel-2 and Landsat-8 are standard bands).
         
     Returns:
         pandas DataFrame: A DataFrame containing the importance of each feature (for each feature we have its own
@@ -76,9 +76,9 @@ def get_features_importance(s_df, sentinel, hide_plain=False):
         # Get the indices of the rows that are between 0 and 15 days after the manure date (why 15 days? Because the effects
         # of manure application on crop field can be seen not just the day immediately after, but also for few weeks after)
         # https://www.mdpi.com/2072-4292/13/9/1616
-        manure_indices =  ((pd.to_datetime(df['s' + str(sentinel) + '_acquisition_date'], format='%Y-%m-%d') - manure_date).dt.days >= 0) & ((pd.to_datetime(df['s' + str(sentinel) + '_acquisition_date'], format='%Y-%m-%d') - manure_date).dt.days <= 15)
+        manure_indices =  ((pd.to_datetime(df[str(satellite) + '_acquisition_date'], format='%Y-%m-%d') - manure_date).dt.days >= 0) & ((pd.to_datetime(df[str(satellite) + '_acquisition_date'], format='%Y-%m-%d') - manure_date).dt.days <= 15)
         # Get the indices of the rows before manure date 
-        before_manure_indices = (pd.to_datetime(df['s' + str(sentinel) + '_acquisition_date'], format='%Y-%m-%d') < manure_date)
+        before_manure_indices = (pd.to_datetime(df[str(satellite) + '_acquisition_date'], format='%Y-%m-%d') < manure_date)
 
         # It calculates the means of the features considering 2 acquisitions before manure date
         mean_prev = df[before_manure_indices].select_dtypes(include=['number']).tail(2).mean()
@@ -93,12 +93,15 @@ def get_features_importance(s_df, sentinel, hide_plain=False):
 
         # Hide plain features (if explicitly asked)
         if (hide_plain):
-            if (sentinel == 1):
-                # Remove the plain polarizations values since we do not want to consider those
+            if (satellite == 's1'):
+                # Remove the polarizations values since we do not want to consider those
                 importance_df = importance_df.drop(importance_df[importance_df['feature'].isin(['VV', 'VH'])].index)
-            if (sentinel == 2):
-                # Remove the plain bands values since we do not want to consider those
+            elif (satellite == 's2'):
+                # Remove the bands values since we do not want to consider those
                 importance_df = importance_df.drop(importance_df[importance_df['feature'].isin(['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B9', 'B11', 'B12'])].index)
+            elif (satellite == 'l8'):
+                # Remove the bands values since we do not want to consider those
+                importance_df = importance_df.drop(importance_df[importance_df['feature'].isin(['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11'])].index)
         
         # Add the results to the list
         results_list.append(importance_df)
@@ -125,16 +128,16 @@ def get_features_importance(s_df, sentinel, hide_plain=False):
     return results_df.reset_index()
 
 
-def display_features_trends(s_df, fields_pos, features, features_pos, sentinel):
+def display_features_trends(s_df, fields_pos, features, features_pos, satellite):
     '''
     This function plots the trends of selected features for selected crop fields.
 
     Parameters:
-        s_df (pandas DataFrame): A DataFrame containing Sentinel-1 or Sentinel-2 features extracted.
+        s_df (pandas DataFrame): A data object containing features extracted from a satellite.
         fields_pos (tuple): A tuple containing the start and end position of the crop field names to plot.
         features (list): A list of feature names to plot.
         features_pos (tuple): A tuple containing the start and end position of the features to plot.
-        sentinel (int): The Sentinel number (1 for Sentinel-1 or 2 for Sentinel-2).
+        satellite (str): The satellite name abbreviated ('s1' for Sentinel-1, 's2' for Sentinel-2, or 'l8' for Landsat-8).
     
     Returns:
         None.
@@ -148,7 +151,7 @@ def display_features_trends(s_df, fields_pos, features, features_pos, sentinel):
         # Iterate over each feature to plot
         for feature in features[features_pos[0]: features_pos[-1]]:
             # Plot the feature values for the crop field
-            plt.plot(s_df[s_df['crop_field_name'] == crop_field_name]['s' + str(sentinel) +'_acquisition_date'], 
+            plt.plot(s_df[s_df['crop_field_name'] == crop_field_name][str(satellite) +'_acquisition_date'], 
                      s_df[s_df['crop_field_name'] == crop_field_name][feature])
             legend.append(feature)
         
@@ -163,8 +166,8 @@ def display_features_trends(s_df, fields_pos, features, features_pos, sentinel):
         # Add vertical dashed lines before and after each manure application date
         for manure_date in manure_dates:
             manure_date = pd.to_datetime(manure_date.replace('[','').replace(']',''))
-            before_manure_date = s_df[(s_df['crop_field_name'] == crop_field_name) & (pd.to_datetime(s_df['s' + str(sentinel) + '_acquisition_date']) < manure_date)]['s' + str(sentinel) + '_acquisition_date'].iloc[-1]
-            after_or_equal_manure_date = s_df[(s_df['crop_field_name'] == crop_field_name) & (pd.to_datetime(s_df['s' + str(sentinel) + '_acquisition_date']) >= manure_date)]['s' + str(sentinel) + '_acquisition_date'].iloc[0]
+            before_manure_date = s_df[(s_df['crop_field_name'] == crop_field_name) & (pd.to_datetime(s_df[str(satellite) + '_acquisition_date']) < manure_date)][str(satellite) + '_acquisition_date'].iloc[-1]
+            after_or_equal_manure_date = s_df[(s_df['crop_field_name'] == crop_field_name) & (pd.to_datetime(s_df[str(satellite) + '_acquisition_date']) >= manure_date)][str(satellite) + '_acquisition_date'].iloc[0]
             plt.axvline(x=before_manure_date, linestyle='--', color='k')
             plt.axvline(x=after_or_equal_manure_date, linestyle='--', color='k')
             legend.append('RoI')

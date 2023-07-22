@@ -4,15 +4,15 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
 
-def get_modified_df(s_df, sentinel):
+def get_modified_df(s_df, satellite):
     '''
     This function modifies the input DataFrame, such that we obtain the difference between two consequent acquisitions, for a 
     specific crop field and a further column named 'y' indicating whether a manure date is within the two considered consequent
     acquisitions.
 
     Parameters:
-        s_df (pandas DataFrame): A DataFrame containing Sentinel-1 or Sentinel-2 extracted features.
-        sentinel (int): An integer indicating whether the DataFrame contains Sentinel-1 or Sentinel-2 features.
+        s_df (pandas DataFrame): A data object containing features extracted from a satellite.
+        satellite (str): The satellite name abbreviated ('s1' for Sentinel-1, 's2' for Sentinel-2, or 'l8' for Landsat-8).
 
     Returns:
         pandas DataFrame: The modified DataFrame with the additional 'y' column.
@@ -20,20 +20,20 @@ def get_modified_df(s_df, sentinel):
     # Create a copy of the passed DataFrame
     s_df_orig = s_df.copy()
 
-    # Convert the sX_acquisition_date column to datetime
-    acq_date_col_name = 's' + str(sentinel) +'_acquisition_date'
+    # Convert the xx_acquisition_date column to datetime (where 'xx' is the satellite name abbreviated)
+    acq_date_col_name = str(satellite) + '_acquisition_date'
     s_df_orig[acq_date_col_name] = pd.to_datetime(s_df_orig[acq_date_col_name])
 
     # Calculate the difference between consecutive dates grouped by crop_field_name
     s_df_mod = s_df_orig.groupby('crop_field_name').apply(lambda x: x.drop(columns=[acq_date_col_name, 'manure_dates']).apply(lambda y: y.diff() if y.name != 'crop_field_name' else y))
 
     # Add a column that contains the string representation of the date difference between two
-    # consequent s_acquisition_date values for a specific crop field
-    s_df_mod['consequent_s' +str(sentinel) + '_acquisitions'] = s_df_orig.groupby('crop_field_name')[acq_date_col_name].apply(lambda x: ['[{}, {}]'.format(x.iloc[i].strftime('%Y-%m-%d'), x.iloc[i+1].strftime('%Y-%m-%d')) for i in range(-1, len(x)-1)]).explode().reset_index(drop=True)
+    # consequent_xx_acquisition_date values for a specific crop field
+    s_df_mod['consequent_' + str(satellite) + '_acquisitions'] = s_df_orig.groupby('crop_field_name')[acq_date_col_name].apply(lambda x: ['[{}, {}]'.format(x.iloc[i].strftime('%Y-%m-%d'), x.iloc[i+1].strftime('%Y-%m-%d')) for i in range(-1, len(x)-1)]).explode().reset_index(drop=True)
     # Add column manure_dates that is the same of the original dataframe
     s_df_mod['manure_dates'] = s_df_orig['manure_dates']
 
-    # Add a column y that contains 1 if one of the manure dates is within two consequent s_acquisition_date for a specific crop field,
+    # Add a column y that contains 1 if one of the manure dates is within two consequent_xx_acquisition_date for a specific crop field,
     # otherwise 0
     def check_overlap(crop_df):
         manure_dates = crop_df['manure_dates'].apply(lambda x: pd.to_datetime(eval(x)) if isinstance(x, str) else []).tolist()
@@ -50,7 +50,7 @@ def get_modified_df(s_df, sentinel):
     s_df_mod['y'] = s_df_orig.groupby('crop_field_name').apply(check_overlap).reset_index(drop=True)
 
     # Rearrange columns order
-    s_df_mod = s_df_mod[['crop_field_name', 'consequent_s' +str(sentinel) + '_acquisitions'] + [col for col in s_df_mod.columns if col not in ['crop_field_name', 'consequent_s' +str(sentinel) + '_acquisitions', 'manure_dates', 'y']] + ['manure_dates', 'y']]
+    s_df_mod = s_df_mod[['crop_field_name', 'consequent_' + str(satellite) + '_acquisitions'] + [col for col in s_df_mod.columns if col not in ['crop_field_name', 'consequent_' + str(satellite) + '_acquisitions', 'manure_dates', 'y']] + ['manure_dates', 'y']]
 
     # Return the dataframe and removes NaN rows
     return s_df_mod.dropna().reset_index(drop=True)
@@ -63,7 +63,7 @@ def get_balanced_df(s_df_mod, method, random_state=0):
 
     Args:
         s_df_mod (pandas DataFrame): The original dataframe to balance.
-        method (str): The method to be used to sample the dataset ('under' or 'over')
+        method (str): The method to be used to sample the dataset ('under' or 'over').
         random_state (int): The random seed to use for sampling (default 0).
 
     Returns:
