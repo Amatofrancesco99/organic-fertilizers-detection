@@ -15,7 +15,7 @@
 This is the repository for the project *"Detection of manure application on crop fields leveraging satellite data and Machine Learning"* [[thesis]]().
 
 ## **Abstract**
-> Detecting application of manure on crop fields is crucial for remotely assessing the correct management of crops; this is important to various goals such as maintaining soil fertility, productivity, environmental compliance, and - in the EU - also for verifying farmers' compliance with the nitrates directive. 
+> Detecting application of manure on crop fields is crucial for remotely assessing the correct management of crops; this is important to various goals such as maintaining soil fertility, productivity, environmental compliance, and - in the EU - also for verifying farmers' observance with the nitrates directive.
 In the framework outlined above, this thesis research aims at developing an automated, Machine Learning (ML) based, method for detecting manure application leveraging Earth Observation (EO) satellite data.
 Time series of spectral indexes (radar, optical and thermal) have been extracted from specific regions of interest (ROIs), located in Spain and Italy, using different EO satellites; a [Python library](https://pypi.org/project/ee-satellites/), made available for public use, has been developed to efficiently accomplish this purpose.
 After that, the spectral indexes most impacted by manure application have been identified and selected as input to different ML models, which have been compared - especially for what regards their generalization capabilities.
