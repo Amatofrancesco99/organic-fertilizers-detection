@@ -12,7 +12,7 @@
 </div>
 
 ## **Description**
-This is the repository for the project *"Detection of manure application on crop fields leveraging satellite data and Machine Learning"* [[thesis]]().
+This is the repository for the project *"Detection of manure application on crop fields leveraging satellite data and Machine Learning"* [[thesis]](./Documents/thesis.pdf).
 
 ## **Abstract**
 > Detecting application of manure on crop fields is crucial for remotely assessing the correct management of crops; this is important to various goals such as maintaining soil fertility, productivity, environmental compliance, and - in the EU - also for verifying farmers' observance with the nitrates directive.
