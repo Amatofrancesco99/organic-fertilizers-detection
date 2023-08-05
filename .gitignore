@@ -146,3 +146,6 @@ Notebooks/1-features-extraction/utils/setup.cfg
 
 # Some Notebooks folders
 Notebooks/others/
+
+# Documents folder
+Notebooks/Documents/
