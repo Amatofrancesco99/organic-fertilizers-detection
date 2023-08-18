@@ -55,7 +55,7 @@ ee.Initialize()
 Then, supposing that you have already loaded the `fields_df` pandas DataFrame, you have just to run the following code. Change the `satellite` parameter value in case you want `sentinel-1`, or `landasat-8`, indexes extracted for the fields specified (within the time period selected - be careful that the given date format is consistent with [ISO 8601](https://it.wikipedia.org/wiki/ISO_8601) notation). See the above [general description](#get_features-function), instead, to comprehend what `filters_params` and `fields_threads` parameters are useful for.
 
 ```python
-df = sentinel_satellites.get_features(fields_df, '2022-01-01', '2022-12-31', satellite='sentinel-2', filters_params=['40'], fields_threads=3)
+df = ee_satellites.get_features(fields_df, '2022-01-01', '2022-12-31', satellite='sentinel-2', filters_params=['40'], fields_threads=3)
 ```
 
 ## Output DataFrame
@@ -74,3 +74,6 @@ P-VNS | 2022-12-17 | 955.040359  | 1208.792825 | 1617.324664 | ...  | 0.688394 |
 ## What's new?
 * `version: 0.0.1`:
     * This libary comes from the old one (named `sentinel-satellites`) where Landsat-8 indexes have been added
+
+* `version: 0.0.2`:
+    * Improved descriptions
