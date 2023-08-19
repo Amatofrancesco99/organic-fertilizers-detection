@@ -59,7 +59,7 @@ Please consider that each notebook has its own `utils` file or folder.
 ```latex
 @software{Amato_Detection_of_manure_2023,
 author = {Amato, F. and Dell'Acqua, F. and Marzi, D.},
-month = may,
+month = sep,
 title = {{Detection of manure application on crop fields leveraging satellite data and Machine Learning}},
 url = {https://github.com/Amatofrancesco99/master-thesis},
 version = {1.0.0},
