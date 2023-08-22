@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://i.ibb.co/rFLR6dV/logo.png" alt="logo" border="0">
+<img src="https://i.ibb.co/bPMchfz/logo.png" alt="logo" border="0"><br>
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://github.com/Amatofrancesco99/master-thesis/blob/main/Notebooks/1-features-extraction/utils/LICENSE)
 ![maintained](https://img.shields.io/badge/maintained%3F-YES-green.svg)
@@ -79,6 +79,6 @@ P-VNS | 2022-12-17 | 955.040359  | 1208.792825 | 1617.324664 | ...  | 0.688394 |
 * `version: 0.0.1`:
     * This libary comes from the old one (named `sentinel-satellites`) where Landsat-8 indexes have been added
 
-* `versions: 0.0.2` to `0.0.6`:
+* `versions: 0.0.2` to `0.0.7`:
     * Improved descriptions
     * Added logo
