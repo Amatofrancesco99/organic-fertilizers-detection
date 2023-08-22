@@ -79,6 +79,6 @@ P-VNS | 2022-12-17 | 955.040359  | 1208.792825 | 1617.324664 | ...  | 0.688394 |
 * `version: 0.0.1`:
     * This libary comes from the old one (named `sentinel-satellites`) where Landsat-8 indexes have been added
 
-* `versions: 0.0.2` & `0.0.5`:
+* `versions: 0.0.2` to `0.0.6`:
     * Improved descriptions
     * Added logo
