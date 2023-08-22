@@ -1,6 +1,6 @@
 <div align="center">
 
-<img title="logo" src="logo.png">
+<img src="https://i.ibb.co/rFLR6dV/logo.png" alt="logo" border="0">
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://github.com/Amatofrancesco99/master-thesis/blob/main/Notebooks/1-features-extraction/utils/LICENSE)
 ![maintained](https://img.shields.io/badge/maintained%3F-YES-green.svg)
