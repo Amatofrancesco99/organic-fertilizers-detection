@@ -22,7 +22,7 @@ After that, the spectral indexes most impacted by manure application have been i
 Tests have been conducted over both ROIs, including mixed cases where training was carried out on fields from one country and classification on fields located in another (or same).
 In short, results suggest that the spectral signature of manure application is homogeneous within fields located in the same country, and that combining optical and thermal data allows achieving the best classification performances.
 Radar data, instead, provides no significant contribution to system performances.
-The proposed method provides a valuable foundation toward development of a tool to monitor manure application in crop fields and ensure compliance with environmental regulations.
+The proposed method provides a valuable foundation toward development of a tool to monitor manure application on crop fields and ensure compliance with environmental regulations.
 
 ## **Download**
 You can download a copy of all the files in this repository by cloning the git repository:
@@ -39,7 +39,7 @@ pip install -r requirements.txt
 ## **Notebooks**
 ### Features extraction
 The objective of the [*features extraction notebook*](./Notebooks/1-features-extraction/notebook.ipynb) is to extract useful mean indexes values from crop fields of interest, using satellites imagery.
-To facilitate the feature extraction process, a Python library called [`ee-satellites`](https://pypi.org/project/ee-satellites/) has been created and made available on the PyPI repository for public use.
+To facilitate the feature extraction process, a Python library called [`ee-satellites`](./Notebooks/1-features-extraction/utils/) has been created and made available on the PyPI repository for public use.
 
 ### Analysis
 The objective of the [*analysis notebook*](./Notebooks/2-analysis/notebook.ipynb) is to analyze the datasets generated in the previous notebook by performing data visualization, obtaining statistics, and exploring correlations between different indexes. The main goal is to identify which spectral indexes are most affected by the application of manure on crop fields. To assess the significance of feature importance, a t-test has been used.
