@@ -8,11 +8,13 @@
 ![maintained](https://img.shields.io/badge/maintained%3F-YES-green.svg)
 ![stars](https://img.shields.io/github/stars/Amatofrancesco99/master-thesis.svg)
 ![forks](https://img.shields.io/github/forks/Amatofrancesco99/master-thesis.svg)
-![watchers](https://img.shields.io/github/watchers/Amatofrancesco99/master-thesis.svg) <br>
-![GitHub last commit](https://img.shields.io/github/last-commit/Amatofrancesco99/master-thesis)
+![watchers](https://img.shields.io/github/watchers/Amatofrancesco99/master-thesis.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/Amatofrancesco99/master-thesis)  <br>
 ![GitHub contributors](https://img.shields.io/github/contributors/Amatofrancesco99/master-thesis)
 ![GitHub issues](https://img.shields.io/github/issues/Amatofrancesco99/master-thesis)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/Amatofrancesco99/master-thesis)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/Amatofrancesco99/master-thesis) <br>
+![PyPI - Version](https://img.shields.io/pypi/v/ee-satellites)
+![Download-size](https://img.shields.io/badge/size-<20kB-9400d3)
 
 </div><br>
 
@@ -99,3 +101,7 @@ If you want to contribute, please proceed as follow:
 ## License
 
 Distributed under the MIT License.
+
+## References
+
+[[**1**]](https://dev.to/amatofrancesco99/exciting-news-for-data-scientists-and-remote-sensing-enthusiasts-5g2g) Amato. F, et al. "*Revolutionize your satellite data acquisition with EE-Satellites: A leap forward in remote sensing*", DEV Community (Aug 2023). 
