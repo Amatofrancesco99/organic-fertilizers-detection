@@ -8,7 +8,7 @@
 ![maintained](https://img.shields.io/badge/maintained%3F-YES-green.svg)
 ![stars](https://img.shields.io/github/stars/Amatofrancesco99/master-thesis.svg)
 ![forks](https://img.shields.io/github/forks/Amatofrancesco99/master-thesis.svg)
-![watchers](https://img.shields.io/github/watchers/Amatofrancesco99/master-thesis.svg)
+![watchers](https://img.shields.io/github/watchers/Amatofrancesco99/master-thesis.svg) <br>
 ![GitHub last commit](https://img.shields.io/github/last-commit/Amatofrancesco99/master-thesis)
 ![GitHub contributors](https://img.shields.io/github/contributors/Amatofrancesco99/master-thesis)
 ![GitHub issues](https://img.shields.io/github/issues/Amatofrancesco99/master-thesis)
@@ -27,7 +27,7 @@ The easiest way to install `ee-satellites` is by using `pip`:
 $ pip install ee-satellites
 ```
 
-*(Disclaimer: This project is currently under development.)*
+*(Disclaimer: This library is under continous development.)*
 
 ## **Functions** 
 Expand the function you wish to grasp more details about.
