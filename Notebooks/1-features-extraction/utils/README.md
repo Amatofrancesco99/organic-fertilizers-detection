@@ -1,3 +1,5 @@
+<br>
+
 <div align="center">
 
 <img src="https://i.ibb.co/bPMchfz/logo.png" alt="logo" border="0"><br>
@@ -5,24 +7,32 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://github.com/Amatofrancesco99/master-thesis/blob/main/Notebooks/1-features-extraction/utils/LICENSE)
 ![maintained](https://img.shields.io/badge/maintained%3F-YES-green.svg)
 ![stars](https://img.shields.io/github/stars/Amatofrancesco99/master-thesis.svg)
+![forks](https://img.shields.io/github/forks/Amatofrancesco99/master-thesis.svg)
+![watchers](https://img.shields.io/github/watchers/Amatofrancesco99/master-thesis.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/Amatofrancesco99/master-thesis)
+![GitHub contributors](https://img.shields.io/github/contributors/Amatofrancesco99/master-thesis)
+![GitHub issues](https://img.shields.io/github/issues/Amatofrancesco99/master-thesis)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/Amatofrancesco99/master-thesis)
 
 </div><br>
 
-This library provides an **easy-to-use**, **comprehensive**, and **flexible** way to work with satellites data (for now: [S1_GRD](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S1_GRD), [S2_SR](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR) and [LANDSAT8_T1_TOA](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C02_T1_TOA)). Its key advantages include: a **well-documented** API, **support** for the mainly used satellites, **open-source code**, and **regular updates**.<br>
-In addition to the already mentioned advantages, the implemented code **relies on Google Earth Engine (GEE) APIs** (used to access satellites data and perform some tasks such as *cloud masking*, *image compositing*, and *time series selection*) and **exploits multi-threading** (designed to work efficiently, by making a lot of parallel I/O requests to GEE).
+## **About**
+This library provides an **easy-to-use**, **comprehensive** and **flexible** way to work with satellites data (for now: [S1_GRD](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S1_GRD), [S2_SR](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR) and [LANDSAT8_T1_TOA](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C02_T1_TOA)). Its key advantages include: a **well-documented** API, **support** for the mainly used satellites, **open-source code** and **regular updates**.<br> In addition to the already mentioned advantages, the implemented code **relies on Google Earth Engine (GEE) APIs** (used to access satellites data and perform some tasks such as cloud masking, image compositing and time series selection) and **exploits multi-threading** (designed to work efficiently, by making a lot of parallel I/O requests to GEE).
 
-These advantages make it an excellent tool for anyone working with satellites data, since it allows to *generate datasets that can be both easily used for data analysis and efficiently integrated with well-known ML libraries, to deploy models*.
+These advantages make it an excellent tool for anyone working with satellites data, since it allows to generate datasets that can be both easily used for data analysis and efficiently integrated with well-known ML libraries, to deploy models.
 
-**How to install it?**
+### **Installation**
+The easiest way to install `ee-satellites` is by using `pip`:
 ```bash
 $ pip install ee-satellites
 ```
 
-This library is composed of lot of functions, the main ones are here described.
+*(Disclaimer: This project is currently under development.)*
 
-*** 
-***
-## `get_features()` function
+## **Functions** 
+Expand the function you wish to grasp more details about.
+    <details> 
+        <summary><b>`get_features()`</b></summary>
 
 It allows to get from an [input pandas DataFrame](#input-dataframe) composed of fields information, [an output DataFrame](#output-dataframe) that contains for each time a [selected satellite](#how-to-execute-it) (sentinel-1, sentinel-2 or landsat-8) passed over the specified fields, within a given time period, all the mean values of some of the most used indexes (optical, radar or thermal).
 
@@ -32,7 +42,7 @@ The `fields_threads` parameter (default: `4`) is the number of threads to dedica
 
 See the [code](https://github.com/Amatofrancesco99/master-thesis/blob/main/Notebooks/1-features-extraction/utils/ee_satellites.py) for a better understanding.
 
-## Input DataFrame
+### Input DataFrame
 The input DataFrame, lets suppose named `fields_df`, should be structured as follows (just columns position matters):
 
 | field_name      |              polygon_coordinates                  |
@@ -45,7 +55,7 @@ The input DataFrame, lets suppose named `fields_df`, should be structured as fol
 | P-VNS 	      | [(-4.151167740565273, 43.40535762666503), (-4....]|
 
 
-## How to execute it?
+### How to execute it?
 
 First you have to initialize and authorize the Google Earth Engine APIs.
 
@@ -56,13 +66,13 @@ ee.Authenticate()
 ee.Initialize()
 ```
 
-Then, supposing that you have already loaded the `fields_df` pandas DataFrame, you have just to run the following code. Change the `satellite` parameter value in case you want `sentinel-1`, or `landasat-8`, indexes extracted for the fields specified (within the time period selected - be careful that the given date format is consistent with [ISO 8601](https://it.wikipedia.org/wiki/ISO_8601) notation). See the above [general description](#get_features-function), instead, to comprehend what `filters_params` and `fields_threads` parameters are useful for.
+Then, supposing that you have already loaded the `fields_df` pandas DataFrame, you have just to run the following code. Change the `satellite` parameter value in case you want `sentinel-1`, or `landasat-8`, indexes extracted for the fields specified (within the time period selected - be careful that the given date format is consistent with [ISO 8601](https://it.wikipedia.org/wiki/ISO_8601) notation). See the above general function description, instead, to comprehend what `filters_params` and `fields_threads` parameters are useful for.
 
 ```python
 df = ee_satellites.get_features(fields_df, '2022-01-01', '2022-12-31', satellite='sentinel-2', filters_params=['40'], fields_threads=3)
 ```
 
-## Output DataFrame
+### Output DataFrame
 The output generated DataFrame, namely `df`, will be structured as follows:
 | field_name | s2_acquisition_date | B1 | B2 | B3 | ... | MCARI2 | BSI | GLI | ALTERATION | SDI |
 |------------|---------------------|----|----|----|-----|--------|-----|-----|------------|-----|
@@ -72,13 +82,20 @@ P-BLD | 2022-01-16 | 13.785714   | 111.540816  | 528.481293  | ...  | 0.921371 |
 P-VNS | 2022-11-17 | 1133.057399 | 1364.994619 | 1726.755157 | .... | 0.594553 | 11195.020251 |	0.070841 | 1.441033 | 1939.695067 |
 P-VNS | 2022-12-17 | 955.040359  | 1208.792825 | 1617.324664 | ...  | 0.688394 | 10547.592756 |	0.107797 | 1.505526 | 2913.218834 |
 
+</details>
 
-***
-***
-## What's new?
-* `version: 0.0.1`:
-    * This libary comes from the old one (named `sentinel-satellites`) where Landsat-8 indexes have been added
+## Contributing
 
-* `versions: 0.0.2` to `0.0.7`:
-    * Improved descriptions
-    * Added logo
+The `ee-satellites` project is open to contributions. To discuss new ideas and applications, please, reach me via email (please, refer to the [Author]()). To report a bug or request a new feature, please, open an [issue](https://github.com/Amatofrancesco99/master-thesis/issues) to report a bug or to request a new feature.
+
+If you want to contribute, please proceed as follow:
+
+1. Fork the Project
+1. Create your Feature Branch (`git checkout -b ee-satellites/NewFeature`)
+1. Commit your Changes (`git commit -m 'Create NewFeature'`)
+1. Push the Branch (`git push origin ee-satellites/NewFeature`)
+1. Open a Pull Request
+
+## License
+
+Distributed under the MIT License.
