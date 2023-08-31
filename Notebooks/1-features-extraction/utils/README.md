@@ -19,7 +19,7 @@
 </div><br>
 
 ## **About**
-This library provides an **easy-to-use**, **comprehensive** and **flexible** way to work with satellites data (for now: [S1_GRD](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S1_GRD), [S2_SR](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR) and [LANDSAT8_T1_TOA](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C02_T1_TOA)). Its key advantages include: a **well-documented** API, **support** for the mainly used satellites, **open-source code** and **regular updates**.<br> In addition to the already mentioned advantages, the implemented code **relies on Google Earth Engine (GEE) APIs** (used to access satellites data and perform some tasks such as cloud masking, image compositing and time series selection) and **exploits multi-threading** (designed to work efficiently, by making a lot of parallel I/O requests to GEE).
+This library<sup><a href="#references">[1]</a></sup> provides an **easy-to-use**, **comprehensive** and **flexible** way to work with satellites data (for now: [S1_GRD](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S1_GRD), [S2_SR](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR) and [LANDSAT8_T1_TOA](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C02_T1_TOA)). Its key advantages include: a **well-documented** API, **support** for the mainly used satellites, **open-source code** and **regular updates**.<br> In addition to the already mentioned advantages, the implemented code **relies on Google Earth Engine (GEE) APIs** (used to access satellites data and perform some tasks such as cloud masking, image compositing and time series selection) and **exploits multi-threading** (designed to work efficiently, by making a lot of parallel I/O requests to GEE).
 
 These advantages make it an excellent tool for anyone working with satellites data, since it allows to generate datasets that can be both easily used for data analysis and efficiently integrated with well-known ML libraries, to deploy models.
 
@@ -104,4 +104,4 @@ Distributed under the MIT License.
 
 ## References
 
-[[**1**]](https://dev.to/amatofrancesco99/exciting-news-for-data-scientists-and-remote-sensing-enthusiasts-5g2g) Amato. F, et al. "*Revolutionize your Satellite Data Acquisition with ee-satellites: A Leap Forward in Remote Sensing*", DEV Community (Aug 2023). 
+[[**1**]](https://dev.to/amatofrancesco99/exciting-news-for-data-scientists-and-remote-sensing-enthusiasts-5g2g): Amato. F, et al. "*Revolutionize your Satellite Data Acquisition with ee-satellites: A Leap Forward in Remote Sensing*", DEV Community (Aug 2023). 
