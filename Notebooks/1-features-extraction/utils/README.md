@@ -104,4 +104,4 @@ Distributed under the MIT License.
 
 ## References
 
-[[**1**]](https://dev.to/amatofrancesco99/exciting-news-for-data-scientists-and-remote-sensing-enthusiasts-5g2g) Amato. F, et al. "*Revolutionize your satellite data acquisition with EE-Satellites: A leap forward in remote sensing*", DEV Community (Aug 2023). 
+[[**1**]](https://dev.to/amatofrancesco99/exciting-news-for-data-scientists-and-remote-sensing-enthusiasts-5g2g) Amato. F, et al. "*Revolutionize your Satellite Data Acquisition with ee-satellites: A Leap Forward in Remote Sensing*", DEV Community (Aug 2023). 
