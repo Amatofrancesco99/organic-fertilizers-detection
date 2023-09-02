@@ -9,4 +9,4 @@ pydeck==0.8.0
 scikit-learn==1.2.1
 scipy==1.7.1
 seaborn==0.12.1
-ee-satellites==0.0.10
+ee-satellites==0.0.11
