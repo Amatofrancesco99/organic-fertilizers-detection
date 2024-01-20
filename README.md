@@ -28,7 +28,7 @@ The proposed method provides a valuable foundation toward development of a tool 
 You can download a copy of all the files in this repository by cloning the git repository:
 
 ```bash
-git clone https://github.com/Amatofrancesco99/master-thesis.git
+git clone https://github.com/Amatofrancesco99/organic-fertilizers-detection.git
 ```
 
 To install the required libraries in order to replicate the different notebooks results you need to run the following command:
@@ -61,7 +61,7 @@ Please consider that each notebook has its own `utils` file or folder.
 author = {Amato, F. and Dell'Acqua, F. and Marzi, D.},
 month = sep,
 title = {{Detection of manure application on crop fields leveraging satellite data and Machine Learning}},
-url = {https://github.com/Amatofrancesco99/master-thesis},
+url = {https://github.com/Amatofrancesco99/organic-fertilizers-detection},
 version = {1.0.0},
 year = {2023}
 }
